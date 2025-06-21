@@ -8,7 +8,8 @@ const fs = require('fs');
 
 async function runAndSendBoard(client,userID,stoneToAdd = "",showHelp = false,showPuzzleInfo = true){
     try{
-        const info = await getPuzzleInfo(await getActivePuzzleID(client,userID));
+        const puzzleID = await getActivePuzzleID(client,userID);
+        const info = await getPuzzleInfo(puzzleID);
 
         const user = await client.users.fetch(userID);
 
@@ -55,9 +56,18 @@ async function runAndSendBoard(client,userID,stoneToAdd = "",showHelp = false,sh
         }
 
         if(notes != ""){
-            feilds.push({name:"Notes",value:notes});
+            feilds.push({name:"Notes",value:notes,inline:true});
         }
 
+        if (board.correct != undefined && board.correct == true){
+            // add an empty field to make it 3-column, like the puzzle info above
+            // to make both rows aligned with each other
+            feilds.push({name:"\u200b",value:"\u200b",inline:true});
+
+            const puzzle = puzzleID.toString();
+            const link = `[${puzzle}](https://online-go.com/puzzle/${puzzle})`;
+            feilds.push({name:"Puzzle",value:link,inline:true});
+        }
 
         const imageBuilder = new GoBoardImageBuilder(info.boardSize);
 
