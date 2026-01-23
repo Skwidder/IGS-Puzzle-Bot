@@ -1,19 +1,14 @@
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'fs';
+import path from 'path';
 
-const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
-const { discord_token } = require('./config.json');
+import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
+import { IGSBot } from './IGSBot';
+//const { discord_token } = require('./config.json');
+//^^ should be able to remove and use .env
 
-const client = new Client({ 
-	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.DirectMessages,
-		GatewayIntentBits.MessageContent],
-	partials: [
-		Partials.Channel
-	] });
+const igsbot: IGSBot = new IGSBot();
 
-client.commands = new Collection();
+igsbot.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -24,7 +19,7 @@ for (const folder of commandFolders) {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath);
 		if ('data' in command && 'execute' in command) {
-			client.commands.set(command.data.name, command);
+			igsbot.commands.set(command.data.name, command);
 		} else {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
@@ -38,10 +33,9 @@ for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
 	const event = require(filePath);
 	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+		igsbot.once(event.name, (...args) => event.execute(...args));
 	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+		igsbot.on(event.name, (...args) => event.execute(...args));
 	}
 }
 
-client.login(discord_token);
