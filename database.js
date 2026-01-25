@@ -22,7 +22,8 @@ async function rundb() {
     await dbclient.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
     return dbclient;
-  } catch {
+  } catch (error) {
+    console.log(error);
     // Ensures that the client will close when you finish/error
     await dbclient.close();
   }
