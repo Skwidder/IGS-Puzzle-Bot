@@ -274,14 +274,21 @@ async function leaderBoard(interaction,client,guildID,numOfUsersToShow = 10) {
     await interaction.deferReply();
     const users = await getScores(client,guildID);
 
+    const topUsers = users
+        .sort((a,b) => b.score - a.score)
+        .slice(0,numOfUsersToShow);
+
     let validUsers = [];
 
-    for (user of users){
+    for (user of topUsers){
         try{
-            const member = await interaction.guild.members.fetch(user.userId);
+            //Try first to get the members from cache, if that fails fall back to the slow way!
+            const member = interaction.guild.members.cache.get(user.userId) || await interaction.guild.members.fetch(user.userId);
             user.name = member.displayName;
             validUsers.push(user);
         }catch(DiscordAPIError){
+            user.name = "temp";
+            validUsers.push(user);
             continue;
         }
     }
@@ -296,12 +303,12 @@ async function leaderBoard(interaction,client,guildID,numOfUsersToShow = 10) {
     .setTitle('Leaderboard')
     .setDescription(
         validUsers.sort((a, b) => b.score - a.score)
-        .slice(0, numOfUsersToShow)
         .map((user, index) => `#${index + 1} ${user.name}: ${user.score}`)
         .join('\n')
     )
 
     interaction.editReply({ embeds: [embed] });
+
 }
 
 
