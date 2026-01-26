@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-
 import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
 import { IGSBot } from './IGSBot';
 //const { discord_token } = require('./config.json');
 //^^ should be able to remove and use .env
 
 const igsbot: IGSBot = new IGSBot();
+await igsbot.start();
 
 igsbot.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');

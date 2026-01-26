@@ -1,7 +1,7 @@
 import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "discord.js";
 import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
-import { Job, schedule } from "node-schedule";
-import { annoucePuzzle } from "display.js";
+import * as schedule from "node-schedule";
+import { annoucePuzzle } from "./display";
 import { ensureAllServersExist, nextPuzzle } from "./database";
 
 
@@ -41,7 +41,7 @@ export class IGSBot extends Client {
     private mongo!: MongoClient;
     public serverCol!: MongoCollection<ServerDocument>;
     public usersCol!: MongoCollection<UserDocument>
-    public scheduledJobs: Record<string, Job> = {}; 
+    public scheduledJobs: Record<string, schedule.Job> = {}; 
 
     constructor() {
         super({
@@ -55,10 +55,7 @@ export class IGSBot extends Client {
             ]
         });
 
-        await this.mongo = new MongoClient(Bun.env.DBCONNSTRING);
-        await this.start();
-        await ensureAllServersExist(this);
-        await this.scheduleJobs();
+        this.mongo = new MongoClient(Bun.env.DBCONNSTRING!);
     }
 
     async start() {
@@ -72,6 +69,9 @@ export class IGSBot extends Client {
         await this.login(Bun.env.DISCORD_TOKEN);
 
         console.log("Discord Bot Logged In");
+
+        await ensureAllServersExist(this);
+        await this.scheduleJobs();
     }
 
     async scheduleJobs() {
@@ -96,11 +96,11 @@ export class IGSBot extends Client {
                     return;
                 }
 
-                if (channel == "" || channel == undefined || channel == null){
+                if (!channel){
                     return;
                 }
 
-                annoucePuzzle(this,guildId,channel,role);
+                annoucePuzzle(this,guildId,channel,role ?? undefined);
             });
 
             console.log(`Creating Schedule for ${server.name} to Run at: ${scheduleExpression}`);
