@@ -1,11 +1,47 @@
-import { Client, Collection, GatewayIntentBits, Partials } from "discord.js";
-import { MongoClient, Db } from "mongodb";
+import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "discord.js";
+import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
+import { Job, schedule } from "node-schedule";
+import { annoucePuzzle } from "display.js";
+import { ensureAllServersExist, nextPuzzle } from "./database";
+
+
+
+//TODO:Move this to database
+interface UserGuild{
+    guildId: string;
+    score: number;
+    active_moves: string[];
+    tries: number;
+    active: number;
+    in_progress: number;
+    solved: boolean;
+    all_time_score: number;
+}
+interface UserDocument{
+    _id: any;
+    userId: string;
+    guilds: UserGuild[];
+}
+
+interface ServerDocument {
+    _id?: any; 
+    serverId: string;
+    name: string;
+    puzzle_queue: number[];
+    approved_collections: number[];
+    announcementChannel?: string | null;
+    announcementRole?: string | null;
+    scheduleExpression?: string | null;
+}
 
 
 export class IGSBot extends Client {
     public commands = new Collection<string, any>();
-    public db!: Db;
-    private mongo: MongoClient;
+    private db!: Db;
+    private mongo!: MongoClient;
+    public serverCol!: MongoCollection<ServerDocument>;
+    public usersCol!: MongoCollection<UserDocument>
+    public scheduledJobs: Record<string, Job> = {}; 
 
     constructor() {
         super({
@@ -17,14 +53,19 @@ export class IGSBot extends Client {
             partials: [
                 Partials.Channel
             ]
-        })
+        });
 
-        this.mongo = new MongoClient(Bun.env.DBCONNSTRING);
+        await this.mongo = new MongoClient(Bun.env.DBCONNSTRING);
+        await this.start();
+        await ensureAllServersExist(this);
+        await this.scheduleJobs();
     }
 
     async start() {
         await this.mongo.connect();
         this.db = this.mongo.db('Puzzle_Bot');
+        this.serverCol = this.db.collection<ServerDocument>("servers");
+        this.usersCol = this.db.collection<UserDocument>("users");
 
         console.log("Mongo DB Connected");
 
@@ -33,4 +74,36 @@ export class IGSBot extends Client {
         console.log("Discord Bot Logged In");
     }
 
+    async scheduleJobs() {
+        const servers = await this.serverCol.find({}).toArray()
+
+        for (const server of servers){
+            const guildId = server.serverId;
+            const scheduleExpression = server.scheduleExpression;
+            const channel = server.announcementChannel;
+            const role = server.announcementRole;
+
+            if(!scheduleExpression)
+                continue;
+
+            // Create the scheduled job
+            this.scheduledJobs = this.scheduledJobs || {};
+            this.scheduledJobs[guildId] = schedule.scheduleJob(scheduleExpression, async () => {
+                try{
+                    await nextPuzzle(this,guildId);
+                }catch(error){
+                    console.error(`Server: ${server.name} has no queue or approved collections at scheduled time`);
+                    return;
+                }
+
+                if (channel == "" || channel == undefined || channel == null){
+                    return;
+                }
+
+                annoucePuzzle(this,guildId,channel,role);
+            });
+
+            console.log(`Creating Schedule for ${server.name} to Run at: ${scheduleExpression}`);
+        }
+    }
 }

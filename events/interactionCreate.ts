@@ -1,12 +1,13 @@
-const { Events, MessageFlags } = require('discord.js');
-const { runAndSendBoard } = require('../display.js')
+import { Events, MessageFlags, type Interaction } from "discord.js"
+import { runAndSendBoard } from "../display.js";
+import type { IGSBot } from "../IGSBot.js";
 
-module.exports = {
+export default {
 	name: Events.InteractionCreate,
-	async execute(interaction) {
+	async execute(interaction: Interaction) {
+		const client: IGSBot = interaction.client as IGSBot;
 		if (interaction.isChatInputCommand()){
-
-			const command = interaction.client.commands.get(interaction.commandName);
+			const command = client.commands.get(interaction.commandName);
 
 			if (!command) {
 				console.error(`No command matching ${interaction.commandName} was found.`);
@@ -23,15 +24,13 @@ module.exports = {
 					await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
 				}
 			}
-		}else if(interaction.isSelectMenu){
+		}else if(interaction.isAnySelectMenu()){
 			// console.log(interaction);
 
 			if (interaction.customId === 'puzzle_select') {
 				await interaction.update({ content: 'Puzzle Selected!', components: [] });
-				const clientdb = interaction.client.dbconn.db("Puzzle_Bot");
-				const userColl = clientdb.collection("users");
 
-				await userColl.updateOne({ 
+				await client.usersCol.updateOne({ 
                     "userId" : interaction.user.id,
                     "guilds.guildId" : interaction.values[0]
                 }, { $set : {
