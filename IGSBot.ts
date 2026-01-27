@@ -3,8 +3,8 @@ import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
 import * as schedule from "node-schedule";
 import { annoucePuzzle } from "./display";
 import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./database";
-import { advanceToNextPuzzle } from './queueManager';
-import { type NextPuzzleResult } from "./queueManager";
+import { advanceToNextPuzzle } from './ServerManager';
+import { type NextPuzzleResult } from "./ServerManager";
 
 
 export class IGSBot extends Client {
