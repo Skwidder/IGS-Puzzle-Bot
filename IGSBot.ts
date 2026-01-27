@@ -3,6 +3,8 @@ import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
 import * as schedule from "node-schedule";
 import { annoucePuzzle } from "./display";
 import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./database";
+import { advanceToNextPuzzle } from './queueManager';
+import { type NextPuzzleResult } from "./queueManager";
 
 
 export class IGSBot extends Client {
@@ -60,7 +62,7 @@ export class IGSBot extends Client {
             this.scheduledJobs = this.scheduledJobs || {};
             this.scheduledJobs[guildId] = schedule.scheduleJob(scheduleExpression, async () => {
                 try{
-                    await nextPuzzle(this,guildId);
+                    await advanceToNextPuzzle(this,guildId);
                 }catch(error){
                     console.error(`Server: ${server.name} has no queue or approved collections at scheduled time`);
                     return;

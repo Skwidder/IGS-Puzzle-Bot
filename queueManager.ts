@@ -1,25 +1,27 @@
+import { getServer, resetPuzzle } from "./database";
+import { type ServerConfig, type UserDocument } from "./database";
+import type { IGSBot } from "./IGSBot";
+
+//Discriminated Union
+export type NextPuzzleResult = 
+    | { success: true; message: string} 
+    | { success: false; errorType:'EMPTY_QUEUE' | 'NO_COLLECTIONS' | 'DB_ERROR' | 'SERVER_NOT_FOUND'};
 
 
+export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Promise<NextPuzzleResult> {
+  const server: ServerConfig | null = await getServer(client, guildId);
+  if(!server) return { success: false, errorType: 'SERVER_NOT_FOUND'}
 
-async function nextPuzzle(client, guildId) {
-  const queue = await getServerQueue(client, guildId);
-
-  if (queue.length <= 1) {
-    const approvedCollections = await getServerApprovedCollections(client, guildId);
-    if (approvedCollections == null || approvedCollections.length == 0) {
-      throw new Error("No puzzle in queue! Please add one with /add_puzzle, or add a back-up collection with" +
-        " /collection add <collection name>");
+  if (server.puzzle_queue.length <= 1) {
+    if (!server.approved_collections) {
+        return { success: false, errorType: 'NO_COLLECTIONS'}
     }
 
-    collectionId = approvedCollections[Math.floor(Math.random() * approvedCollections.length)];
+    const collectionId = server.approved_collections[Math.floor(Math.random() * server.approved_collections.length)];
     const puzzles = await getAllPuzzlesInCollection(collectionId);
-
     const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
 
-    const clientdb = client.dbconn.db("Puzzle_Bot");
-    const coll = clientdb.collection("servers");
-
-    await coll.updateOne(
+    await client.serverCol.updateOne(
       { serverId: guildId },
       {
         $push: {
@@ -35,11 +37,11 @@ async function nextPuzzle(client, guildId) {
       await moveQueue(client, guildId);
     }
 
-    return "No puzzles in queue; using random approved collection!";
+    return {success: true, message: "No puzzles in queue; using random approved collection!"};
   }
 
   resetPuzzle(client, guildId);
   await moveQueue(client, guildId);
 
-  return "Server moved to next puzzle!";
+  return {success: true, message: "Server moved to next puzzle!"};
 }
