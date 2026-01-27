@@ -2,44 +2,14 @@ import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "di
 import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
 import * as schedule from "node-schedule";
 import { annoucePuzzle } from "./display";
-import { ensureAllServersExist, nextPuzzle } from "./database";
-
-
-
-//TODO:Move this to database
-interface UserGuild{
-    guildId: string;
-    score: number;
-    active_moves: string[];
-    tries: number;
-    active: number;
-    in_progress: number;
-    solved: boolean;
-    all_time_score: number;
-}
-interface UserDocument{
-    _id: any;
-    userId: string;
-    guilds: UserGuild[];
-}
-
-interface ServerDocument {
-    _id?: any; 
-    serverId: string;
-    name: string;
-    puzzle_queue: number[];
-    approved_collections: number[];
-    announcementChannel?: string | null;
-    announcementRole?: string | null;
-    scheduleExpression?: string | null;
-}
+import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./database";
 
 
 export class IGSBot extends Client {
     public commands = new Collection<string, any>();
     private db!: Db;
     private mongo!: MongoClient;
-    public serverCol!: MongoCollection<ServerDocument>;
+    public serverCol!: MongoCollection<ServerConfig>;
     public usersCol!: MongoCollection<UserDocument>
     public scheduledJobs: Record<string, schedule.Job> = {}; 
 
@@ -61,7 +31,7 @@ export class IGSBot extends Client {
     async start() {
         await this.mongo.connect();
         this.db = this.mongo.db('Puzzle_Bot');
-        this.serverCol = this.db.collection<ServerDocument>("servers");
+        this.serverCol = this.db.collection<ServerConfig>("servers");
         this.usersCol = this.db.collection<UserDocument>("users");
 
         console.log("Mongo DB Connected");
