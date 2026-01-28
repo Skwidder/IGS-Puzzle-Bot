@@ -12,12 +12,12 @@ export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Prom
   const server: ServerConfig | null = await getServer(client, guildId);
   if(!server) return { success: false, errorType: 'SERVER_NOT_FOUND'}
 
-  if (server.puzzle_queue.length <= 1) {
-    if (!server.approved_collections) {
+  if (server.puzzle_queue.length < 1) {
+    if (!server.collection_sources) {
         return { success: false, errorType: 'NO_COLLECTIONS'}
     }
 
-    const collectionId = server.approved_collections[Math.floor(Math.random() * server.approved_collections.length)];
+    const collectionId = server.collection_sources[Math.floor(Math.random() * server.collection_sources.length)];
     const puzzles = await getAllPuzzlesInCollection(collectionId);
     const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
 

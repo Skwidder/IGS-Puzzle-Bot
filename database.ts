@@ -1,4 +1,5 @@
 import type { IGSBot } from './IGSBot';
+import type { Providers } from './providers/PuzzleProvider';
 
 export interface UserServerState {
   guildId: string;
@@ -20,11 +21,35 @@ export interface ServerConfig {
   _id?: any;
   serverId: string;
   name: string;
-  puzzle_queue: number[];
-  approved_collections: number[];
+  puzzle_queue: PuzzleQueueItem[];
+  collection_sources: CollectionSource[];
+  active_puzzle: ActivePuzzle;
   announcementChannel?: string | null;
   announcementRole?: string | null;
   scheduleExpression?: string | null;
+}
+
+export interface PuzzleQueueItem {
+  source: Providers;
+  puzzleId: string | number;
+}
+
+export interface ActivePuzzle {
+  source: Providers;
+  puzzleId: string | number;
+  tree: any;
+  size: number;
+  whiteStonesInital?: string;
+  blackStonesInital?: string;
+  author: string;
+  description?: string;
+  collectionName?: string;
+}
+
+export interface CollectionSource {
+  source: Providers;
+  type: 'COLLECTION' | 'SEARCH';
+  payload: string | number;
 }
 
 export async function ensureAllServersExist(client: IGSBot) {
