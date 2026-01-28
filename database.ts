@@ -1,4 +1,5 @@
-import type { IGSBot } from './IGSBot';
+import { Client } from 'discord.js';
+import { IGSBot } from './IGSBot';
 import type { Providers } from './providers/PuzzleProvider';
 
 export interface UserServerState {
@@ -166,10 +167,25 @@ export async function resetPuzzle(client: IGSBot, guildId: string) {
     });
 }
 
-export async function movePuzzleQueue(client: IGSBot, guildId: string) {
-  await client.serverCol.updateOne(
+/**
+ * 
+ * @param client IGSBot
+ * @param guildId id of the server to move the queue
+ * @returns PuzzleQueueItem The first element in the queue before the move,
+ * aka the one that got removed or null if the server dose not exist or no item was removed
+ */
+export async function movePuzzleQueue(client: IGSBot, guildId: string): Promise<PuzzleQueueItem | null> {
+  const server = await getServer(client,guildId);
+  if(!server) return null;
+
+
+  const response = await client.serverCol.updateOne(
     { serverId: guildId },
     { $pop: { puzzle_queue: -1 } });  // -1 removes first element
+
+  if(response.modifiedCount = 0) return null; 
+
+  return server.puzzle_queue[0]; //return old first item
 }
 
 export async function incrementTries(client: IGSBot, userId: string) {
@@ -271,5 +287,13 @@ export async function resetLeaderboard(client: IGSBot, guildId: string) {
     "guilds": { $elemMatch: { "guildId": guildId, "solved": true } }
   },
     { $set: { "guilds.$.score": 1 } }
+  );
+}
+
+export async function setActivePuzzle(client: IGSBot, guildId: string, puzzle: ActivePuzzle) {
+  await client.serverCol.updateOne({
+    "serverId": guildId
+  },
+    { $set: { "active_puzzle": puzzle } }
   );
 }

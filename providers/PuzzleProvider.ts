@@ -7,7 +7,7 @@ export abstract class PuzzleProvider {
     abstract readonly slug: Providers;
     abstract readonly baseURL: string;
 
-    abstract fetchPuzzle(puzzleId: string): Promise<ActivePuzzle>;
+    abstract fetchPuzzle(puzzleId: string | number): Promise<ActivePuzzle>;
 
     abstract discoverPuzzles(collectionSource: CollectionSource): Promise<number[]>;
     

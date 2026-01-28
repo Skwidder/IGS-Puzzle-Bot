@@ -5,6 +5,7 @@ import { annoucePuzzle } from "./display";
 import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./database";
 import { advanceToNextPuzzle } from './ServerManager';
 import { type NextPuzzleResult } from "./ServerManager";
+import { Registry } from "./providers/ProviderRegistry";
 
 
 export class IGSBot extends Client {
@@ -14,6 +15,7 @@ export class IGSBot extends Client {
     public serverCol!: MongoCollection<ServerConfig>;
     public usersCol!: MongoCollection<UserDocument>
     public scheduledJobs: Record<string, schedule.Job> = {}; 
+    public providerRegistry: Registry = new Registry();
 
     constructor() {
         super({
