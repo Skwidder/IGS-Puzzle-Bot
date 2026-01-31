@@ -40,8 +40,9 @@ export interface ActivePuzzle {
   puzzleId: string | number;
   tree: any;
   size: number;
-  whiteStonesInital?: string;
-  blackStonesInital?: string;
+  initialPlayer?: "white" | "black";
+  whiteStonesInitial?: string;
+  blackStonesInitial?: string;
   author: string;
   description?: string;
   collectionName?: string;

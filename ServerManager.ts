@@ -1,4 +1,4 @@
-import { getServer, movePuzzleQueue, pushActivePuzzle, resetPuzzle, setActivePuzzle, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./database";
+import { getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./database";
 import { type ServerConfig, type UserDocument } from "./database";
 import type { IGSBot } from "./IGSBot";
 import type { PuzzleProvider } from "./providers/PuzzleProvider";
@@ -6,7 +6,7 @@ import type { PuzzleProvider } from "./providers/PuzzleProvider";
 //Discriminated Union
 export type NextPuzzleResult = 
     | { success: true; message: string} 
-    | { success: false; errorType:'EMPTY_QUEUE' | 'NO_COLLECTIONS' | 'DB_ERROR' | 'SERVER_NOT_FOUND'};
+    | { success: false; errorType:'EMPTY_QUEUE' | 'NO_COLLECTIONS' | 'DB_ERROR' | 'SERVER_NOT_FOUND' | 'PUZZLE_NOT_FOUND'};
 
 
 export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Promise<NextPuzzleResult> {
@@ -25,7 +25,9 @@ export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Prom
 
     const puzzles = await provider.discoverPuzzles(collectionSource);
     const puzzleId = puzzles[Math.floor(Math.random() * puzzles.length)];
-    const puzzle: ActivePuzzle = await provider.fetchPuzzle(puzzleId);
+    const puzzle: ActivePuzzle | null = await provider.fetchPuzzle(puzzleId);
+
+    if(!puzzle) return {success: false, errorType: 'PUZZLE_NOT_FOUND'};
     
     setActivePuzzle(client, guildId, puzzle);
     resetPuzzle(client, guildId);

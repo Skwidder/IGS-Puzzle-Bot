@@ -470,13 +470,6 @@ function printBoard(array) {
 }
 
 
-// Convert SGF coordinate (e.g., "aa") to x,y coordinates
-function sgfToCoords(sgf) {
-    if (!sgf || sgf.length !== 2) return null;
-    const x = sgf.charCodeAt(0) - 'a'.charCodeAt(0);
-    const y = sgf.charCodeAt(1) - 'a'.charCodeAt(0);
-    return { x, y };
-}
 
 function wgoGridToImageStones(grid = []) {
     const size = Math.sqrt(grid.length)
