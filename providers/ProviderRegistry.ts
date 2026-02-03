@@ -1,4 +1,5 @@
 import type { PuzzleProvider } from "./PuzzleProvider";
+import { OGSProvider } from "./OGSProvider";
 
 export enum Providers {
     OGS = "ogs",
