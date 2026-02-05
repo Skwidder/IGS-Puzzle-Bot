@@ -1,7 +1,6 @@
 import { sgfToCoords } from "./utils";
+import sharp from 'sharp'
 
-const Wgo = require("wgo");
-const sharp = require('sharp');
 
 export class GoBoardImageBuilder {
     private svgContent: string[] = [];

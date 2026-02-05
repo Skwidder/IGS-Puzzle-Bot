@@ -56,7 +56,7 @@ export class OGSProvider extends PuzzleProvider{
         return puzzles;
     }
 
-    async simulateMove(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse> {
+    async getMoveResponse(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse> {
         let moveTree = puzzle.tree;
         
         //Add on players new move
@@ -105,7 +105,7 @@ export class OGSProvider extends PuzzleProvider{
         return {
             isSequanceEnd: false,
             isCorrect: false,
-            comments: moveTree.comments ?? "",
+            comments: moveTree.text.replace(/<(?!br\s*\/?)[^>]+>/g, '') ?? "",
             responseMove: moveSGF,
             marks: marks,
         };
@@ -126,7 +126,6 @@ export class OGSProvider extends PuzzleProvider{
         return null;
     }
 
-    //TODO: Add Mark support
     private checkIfSequanceEnd(moveTree: any, responseMove?: string): MoveResponse | null{
         const marks: string[] = this.convertMarks(moveTree);
 
@@ -136,7 +135,7 @@ export class OGSProvider extends PuzzleProvider{
                     return {
                         isSequanceEnd: true,
                         isCorrect: true,
-                        comments: moveTree.comments,
+                        comments: moveTree.text.replace(/<(?!br\s*\/?)[^>]+>/g, ''),
                         responseMove: responseMove,
                         marks: marks,
                     };
@@ -144,7 +143,7 @@ export class OGSProvider extends PuzzleProvider{
                     return {
                         isSequanceEnd: true,
                         isCorrect: false,
-                        comments: moveTree.comments,
+                        comments: moveTree.text.replace(/<(?!br\s*\/?)[^>]+>/g, ''),
                         responseMove: responseMove,
                         marks: marks,
                     };

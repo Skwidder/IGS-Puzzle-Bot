@@ -5,7 +5,7 @@ export interface MoveResponse{
     isSequanceEnd: boolean
     isCorrect: boolean
     responseMove?: string //SGF format eg W[ac]
-    marks?: string[] 
+    marks?: string[] //SGF format 
     comments?: string
 }
 
@@ -19,5 +19,5 @@ export abstract class PuzzleProvider {
 
     abstract discoverPuzzles(collectionSource: CollectionSource): Promise<number[] | string[] | null>;
     
-    abstract simulateMove(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse>;
+    abstract getMoveResponse(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse>;
 }
