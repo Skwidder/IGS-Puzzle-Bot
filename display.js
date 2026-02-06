@@ -228,24 +228,7 @@ async function infoToEmbedFeilds(puzzleInfo) {
         inline: true
     });
 
-
     return feilds;
-}
-
-
-async function inititalStoneConverter(blackStonesInital,whiteStonesInital){
-    stones = [];
-    for (let i = 0; i < whiteStonesInital.length; i = i + 2){
-        const cords = sgfToCoords(whiteStonesInital[i] + whiteStonesInital[i+1]);
-        stones.push({x: cords.x, y:cords.y , color: 'white'});
-    }
-
-    for (let i = 0; i < blackStonesInital.length; i = i + 2){
-        const cords = sgfToCoords(blackStonesInital[i] + blackStonesInital[i+1]);
-        stones.push({x: cords.x, y:cords.y , color: 'black'});
-    }
-
-    return stones;
 }
 
 async function puzzleSelectorMenu(interaction,client,userID,inProgressPuzzles){
@@ -309,13 +292,4 @@ async function leaderBoard(interaction,client,guildID,numOfUsersToShow = 10) {
 
     interaction.editReply({ embeds: [embed] });
 
-}
-
-
-module.exports = {
-    runAndSendBoard,
-    showPuzzle,
-    annoucePuzzle,
-    puzzleSelectorMenu,
-    leaderBoard
 }

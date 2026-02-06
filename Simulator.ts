@@ -1,6 +1,6 @@
 import type { ActivePuzzle } from "./database";
 import type { MoveResponse } from "./providers/PuzzleProvider";
-import { sgfToCoords } from "./utils";
+import { sgfToCoords } from "./utils/utils";
 import wgo from 'wgo' 
 
 

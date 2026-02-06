@@ -1,4 +1,4 @@
-import { sgfToCoords } from "./utils";
+import { sgfToCoords } from "./utils/utils";
 import sharp from 'sharp'
 
 

@@ -3,7 +3,7 @@ import { Providers } from "./ProviderRegistry";
 import type { ActivePuzzle, CollectionSource } from "../database";
 import axios from "axios";
 import { ActionRow } from "discord.js";
-import { coordsToSGF, sgfToCoords } from "../utils";
+import { coordsToSGF, sgfToCoords } from "../utils/utils";
 
 export class OGSProvider extends PuzzleProvider{
     readonly name = "Online Go Server";
