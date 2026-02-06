@@ -20,4 +20,6 @@ export abstract class PuzzleProvider {
     abstract discoverPuzzles(collectionSource: CollectionSource): Promise<number[] | string[] | null>;
     
     abstract getMoveResponse(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse>;
+
+    abstract getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined>
 }

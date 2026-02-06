@@ -1,5 +1,6 @@
 import { sgfToCoords } from "./utils/utils";
 import sharp from 'sharp'
+import { Color } from "wgo";
 
 
 export class GoBoardImageBuilder {
@@ -303,7 +304,7 @@ export class GoBoardImageBuilder {
         }
     }
     
-    public addWgoGridStones(grid = []) {
+    public addWgoGridStones(grid: Color[] = []) {
         const size = Math.sqrt(grid.length)
         if (!Number.isInteger(size)) {
             console.log("Grid Must be square");

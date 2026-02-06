@@ -67,13 +67,7 @@ export class OGSProvider extends PuzzleProvider{
         const playerColor = puzzle.initialPlayer == "black" ? "B" : "W";
         const responseColor = puzzle.initialPlayer == "white" ? "B" : "W";
 
-
-        // Get where we are in the move tree
-        for (let move in moves){
-            const coord: {x: number, y: number} | null = sgfToCoords(move);
-            if(!coord) throw Error(`OGS: sgfToCoords erorr: ${move}`);
-            moveTree = this.getMoveBranch(coord, moveTree);
-        }
+        moveTree = this.getToMoveBranch(puzzle,moves);
         
         //If moveTree is null we know some where a move was played thats not supported
         if(!moveTree){
@@ -99,7 +93,7 @@ export class OGSProvider extends PuzzleProvider{
         endCheck = this.checkIfSequanceEnd(moveTree)
         if(endCheck) return endCheck; 
 
-        const marks: string[] = this.convertMarks(moveTree)
+        const marks: string[] = await this.getMarks(moveTree);
 
         //if we havent left yet then its just a response not a end
         return {
@@ -110,11 +104,28 @@ export class OGSProvider extends PuzzleProvider{
             marks: marks,
         };
     }
+
+
+    async getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined> {
+        const branch = this.getToMoveBranch(puzzle, moves);
+        const marks: string[] = this.convertMarks(branch);
+        return marks;
+    }
     
-    
+    //Iterate though the move tree untill out of moves
+    private getToMoveBranch(puzzle: ActivePuzzle, moves: string[]): any {
+        let moveTree = puzzle.tree;
+        
+        for (let move in moves){
+            const coord: {x: number, y: number} | null = sgfToCoords(move);
+            if(!coord) throw Error(`OGS: sgfToCoords erorr: ${move}`);
+            moveTree = this.getMoveBranch(coord, moveTree);
+        }
+        return moveTree;
+    }
 
     //Trim the tree to the move we are currently on
-    private getMoveBranch(coord: {x: number, y: number}, moveTree: any): string | null{
+    private getMoveBranch(coord: {x: number, y: number}, moveTree: any){
         if(!moveTree) return null;
 
         for (let move of moveTree.branches) {

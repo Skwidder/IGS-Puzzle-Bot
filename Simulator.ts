@@ -7,7 +7,7 @@ import wgo from 'wgo'
 export async function getSimulatedBoard(
     puzzle: ActivePuzzle, 
     pastMoves: string[], 
-    newMove: string, 
+    newMove?: string, 
     responseMove?: MoveResponse ): Promise<false | wgo.Position>{
 
     //Wgo handles x y coords backwards so we swap them when we place the stone
@@ -52,12 +52,14 @@ export async function getSimulatedBoard(
     //TODO: rewite to append to past moves(DRC)
 
     //add new player move
-    let coord = sgfToCoords(newMove);
-    if(!coord) return false; 
+    if(newMove){
+        let coord = sgfToCoords(newMove);
+        if(!coord) return false; 
 
-    state = game.play(coord.y, coord.x);
-    if (state == false) return false;
-    
+        state = game.play(coord.y, coord.x);
+        if (state == false) return false;
+    }
+        
 
     //add reponse move
     if(responseMove?.responseMove){

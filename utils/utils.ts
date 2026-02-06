@@ -41,29 +41,32 @@ export function coordsToSGF(coord: {x: number, y: number}): string {
 // }
 
 
-// function standardNotationToSGF(coord,size=19) {
-//     if (!coord || coord.length < 2) {
-//         return null;
-//     }
+export function standardNotationToSGF(playerColor: "white" | "black", coord: string, size=19): string | null {
+    if (!coord || coord.length < 2) {
+        return null;
+    }
 
-//     // Split into column letter and row number
-//     const col = coord[0].toUpperCase();
-//     const row = parseInt(coord.slice(1));
+    // Split into column letter and row number
+    const col = coord[0].toUpperCase();
+    const row = parseInt(coord.slice(1));
 
-//     // Convert column: A->a, B->b, etc.
-//     // Note: SGF skips 'i' to avoid confusion
-//     let sgfCol = String.fromCharCode(col.charCodeAt(0) - 'A'.charCodeAt(0) + 'a'.charCodeAt(0));
-//     if (col.charCodeAt(0) >= 'I'.charCodeAt(0)) {
-//         sgfCol = String.fromCharCode(sgfCol.charCodeAt(0) - 1);
-//     }
+    // Convert column: A->a, B->b, etc.
+    // Note: SGF skips 'i' to avoid confusion
+    let sgfCol = String.fromCharCode(col.charCodeAt(0) - 'A'.charCodeAt(0) + 'a'.charCodeAt(0));
+    if (col.charCodeAt(0) >= 'I'.charCodeAt(0)) {
+        sgfCol = String.fromCharCode(sgfCol.charCodeAt(0) - 1);
+    }
 
 
-//     // Convert row: SGF counts from bottom-up, a=1
-//     // For 19x19 board, row 19 = 'a', row 1 = 's'
-//     const sgfRow = String.fromCharCode(('s'.charCodeAt(0) - (19 - size)) - row + 1);
+    // Convert row: SGF counts from bottom-up, a=1
+    // For 19x19 board, row 19 = 'a', row 1 = 's'
+    const sgfRow = String.fromCharCode(('s'.charCodeAt(0) - (19 - size)) - row + 1);
 
-//     return sgfCol + sgfRow;
-// }
+
+    let SGF = playerColor == "black" ? "B[" : "W["; 
+    SGF += sgfCol + sgfRow + ']';
+    return SGF;
+}
 
 // function coordsToStandard(x, y, size = 19) {
 //     // Convert x coordinate (0-18) to letter (A-T, skipping I)

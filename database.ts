@@ -92,32 +92,8 @@ export async function getUser(client: IGSBot, userId: string): Promise<UserDocum
   return user ?? null;
 }
 
-export async function getUserActiveServerState(client: IGSBot, userId: string): Promise<UserServerState | null> {
-  const activeServer = await client.usersCol.findOne({
-    "userId": userId,
-    "guilds.active": 1
-  }, {
-    projection: {
-      "guilds.$": 1
-    }
-  });
 
-  return activeServer?.guilds?.[0] ?? null;
-}
-
-export async function getUserActiveServerConfig(client: IGSBot, userId: string): Promise<ServerConfig | null> {
-  let activeServerState: UserServerState | null = await getUserActiveServerState(client, userId);
-
-  if (!activeServerState) return null;
-
-  const activePuzzleServer: ServerConfig | null = await client.serverCol.findOne({
-    "serverId": activeServerState.guildId
-  })
-
-  return activePuzzleServer ?? null
-}
-
-export async function addUserActiveStone(client: IGSBot, userId: string, stoneToAdd: string) {
+export async function addUserMove(client: IGSBot, userId: string, stoneToAdd: string) {
   await client.usersCol.updateOne({
     "userId": userId,
     "guilds.active": 1
@@ -128,7 +104,7 @@ export async function addUserActiveStone(client: IGSBot, userId: string, stoneTo
   });
 }
 
-export async function removeLastUserStone(client: IGSBot, userId: string) {
+export async function removeLastMove(client: IGSBot, userId: string) {
   client.usersCol.updateOne({
     "userId": userId,
     "guilds.active": 1
@@ -139,7 +115,7 @@ export async function removeLastUserStone(client: IGSBot, userId: string) {
   });
 }
 
-export async function resetUserActiveMoves(client: IGSBot, userId: string) {
+export async function resetUserMoves(client: IGSBot, userId: string) {
   await client.usersCol.updateOne(
     {
       "userId": userId,
@@ -226,6 +202,35 @@ export async function setSolved(client: IGSBot, userId: string, solved: boolean 
     {
       $set: {
         "guilds.$.solved": solved
+      }
+    }
+  );
+}
+
+export async function setUserActiveServer(client: IGSBot, userId: string, activeServerId: string){
+  await client.usersCol.updateOne(
+    {
+      "userId": userId,
+      "guilds.id": activeServerId
+    },
+    {
+      $set: {
+        "guilds.$.active": 1
+      }
+    }
+  );
+}
+
+export async function resetUserActiveServers(client: IGSBot, userId: string){
+  //could get away with update one but lets just be safe
+  await client.usersCol.updateMany(
+    {
+      "userId": userId,
+      "guilds.active": 1
+    },
+    {
+      $set: {
+        "guilds.$.active": 0
       }
     }
   );
