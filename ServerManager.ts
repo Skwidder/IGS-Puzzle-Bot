@@ -10,7 +10,7 @@ import { interactionReply } from "./discordManager";
 //Discriminated Union
 export type NextPuzzleResult = 
     | { success: true; message: string} 
-    | { success: false; errorType:'EMPTY_QUEUE' | 'NO_COLLECTIONS' | 'DB_ERROR' | 'SERVER_NOT_FOUND' | 'PUZZLE_NOT_FOUND'};
+    | { success: false; errorType:'EMPTY_QUEUE' | 'NO_COLLECTIONS' | 'DB_ERROR' | 'SERVER_NOT_FOUND' | 'PUZZLE_NOT_FOUND' | 'COLLECTION_NOT_FOUND'};
 
 
 export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Promise<NextPuzzleResult> {
@@ -26,8 +26,10 @@ export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Prom
       Math.floor(Math.random() * server.collection_sources.length)];
     
     const provider: PuzzleProvider = await client.providerRegistry.get(collectionSource.source);
-
     const puzzles = await provider.discoverPuzzles(collectionSource);
+    
+    if(!puzzles) return{success: false, errorType: "COLLECTION_NOT_FOUND"};
+    
     const puzzleId = puzzles[Math.floor(Math.random() * puzzles.length)];
     const puzzle: ActivePuzzle | null = await provider.fetchPuzzle(puzzleId);
 
@@ -44,6 +46,8 @@ export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Prom
 
   const provider: PuzzleProvider = await client.providerRegistry.get(nextPuzzle.source);
   const puzzle: ActivePuzzle = await provider.fetchPuzzle(nextPuzzle.puzzleId);
+  
+  if(!puzzle) return {success: false, errorType: 'PUZZLE_NOT_FOUND'}
 
   setActivePuzzle(client,guildId, puzzle);
   resetPuzzle(client, guildId);
