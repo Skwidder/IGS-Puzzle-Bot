@@ -1,6 +1,8 @@
-import { ActionRowBuilder, ComponentBuilder, InteractionResponse,  MessageFlags,  StringSelectMenuBuilder,  StringSelectMenuComponent,  type ActionRowComponent,  type AnyComponentBuilder,  type Message, type MessageActionRowComponentBuilder, type RepliableInteraction, type User } from "discord.js";
+import { ActionRowBuilder, ComponentBuilder, InteractionResponse,  MessageFlags,  StringSelectMenuBuilder,  StringSelectMenuComponent,  TextChannel,  type ActionRowComponent,  type AnyComponentBuilder,  type GuildBasedChannel,  type Message, type MessageActionRowComponentBuilder, type RepliableInteraction, type User } from "discord.js";
 import type { EmbedPackage } from "./MessageBuilder";
-import type { ActivePuzzle, ServerConfig } from "./databaseManager";
+import { getServer, type ActivePuzzle, type ServerConfig } from "./databaseManager";
+import type { IGSBot } from "./IGSBot";
+import { channel } from "node:diagnostics_channel";
 
 export async function sendUserDM(user: User, text: string = "", embedPackage?: EmbedPackage): Promise<null | Message> {
     try {
@@ -47,5 +49,38 @@ export async function sendPuzzleSelectorMenu(user: User, inProgressServers: Serv
             content: 'You have multiple in progress puzzles which would you like to do?',
             components: [row],
         });
+    }
+}
+
+export async function sendAnnounceChannelMessage(client: IGSBot, serverId: string, text: string = "", embedPackage?: EmbedPackage):
+    Promise<Message | null> {
+
+    const server: ServerConfig | null = await getServer(client, serverId);
+    if(!server || !server?.announcementChannel) return null;
+
+    return await sendChannelMessage(client, server.announcementChannel);
+}
+
+export async function sendChannelMessage(client: IGSBot, channelId: string, text: string = "", embedPackage?: EmbedPackage):
+    Promise<Message | null> {
+    // const guild = await client.guilds.fetch(serverId);
+    // if (!guild) {
+    // console.log(`Not seeing ${serverId} Bot may have been kicked`);
+    // }
+
+    // const channel: GuildBasedChannel | null = await guild.channels.fetch(channelId);
+    const channel = await client.channels.fetch(channelId);
+    if ((!channel || !channel?.isTextBased())  && channel?.isDMBased()) return null;
+
+    let textChannel: TextChannel = channel as TextChannel;
+
+     try {
+        return await textChannel?.send({
+            content: text, 
+            embeds: embedPackage?.embed ? [embedPackage.embed] : [],
+            files: embedPackage?.attachment ? [embedPackage.attachment] : []});
+    } catch (error){
+        console.log((error as Error).message);
+        return null;
     }
 }

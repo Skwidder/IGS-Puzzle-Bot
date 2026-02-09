@@ -1,10 +1,7 @@
 import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "discord.js";
 import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
-
-import { annoucePuzzle } from "./display";
+import type { Job } from "node-schedule";
 import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./databaseManager";
-import { advanceToNextPuzzle } from './ServerManager';
-import { type NextPuzzleResult } from "./ServerManager";
 import { Registry } from "./providers/ProviderRegistry";
 
 
@@ -14,7 +11,7 @@ export class IGSBot extends Client {
     private mongo!: MongoClient;
     public serverCol!: MongoCollection<ServerConfig>;
     public usersCol!: MongoCollection<UserDocument>
-    public scheduledJobs: Record<string, schedule.Job> = {}; 
+    public scheduledJobs: Record<string, Job> = {}; 
     public providerRegistry: Registry = new Registry();
 
     constructor() {
