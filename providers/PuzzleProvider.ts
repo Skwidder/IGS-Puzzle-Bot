@@ -1,4 +1,4 @@
-import type { ActivePuzzle, CollectionSource } from "../database";
+import type { ActivePuzzle, CollectionSource } from "../databaseManager";
 import type { Providers } from "./ProviderRegistry";
 
 export interface MoveResponse{

@@ -1,4 +1,4 @@
-const { nextPuzzle } = require("../../database.js")
+const { nextPuzzle } = require("../../databaseManager.js")
 const { SlashCommandBuilder, PermissionFlagsBits,  InteractionContextType } = require('discord.js');
 
 module.exports = {

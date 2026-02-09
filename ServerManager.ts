@@ -1,5 +1,5 @@
-import { getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./database";
-import { type ServerConfig, type UserDocument } from "./database";
+import { getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
+import { type ServerConfig, type UserDocument } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import type { PuzzleProvider } from "./providers/PuzzleProvider";
 

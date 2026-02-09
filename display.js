@@ -1,6 +1,6 @@
 const {runBoard, GoBoardImageBuilder, sgfToCoords, wgoGridToImageStones, standardNotationToSGF, coordsToStandard } = require("./Simulator.js");
 const {getPuzzleInfo} = require('./OGS.js');
-const { getActivePuzzleID,getActiveServerName,getServerName,getScores, nextPuzzle } = require("./database.js");
+const { getActivePuzzleID,getActiveServerName,getServerName,getScores, nextPuzzle } = require("./databaseManager.js");
 const { EmbedBuilder,AttachmentBuilder,StringSelectMenuBuilder, ActionRowBuilder, DiscordAPIError } = require("discord.js");
 
 const Wgo = require("wgo");

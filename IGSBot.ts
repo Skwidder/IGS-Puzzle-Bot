@@ -2,7 +2,7 @@ import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "di
 import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
 import * as schedule from "node-schedule";
 import { annoucePuzzle } from "./display";
-import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./database";
+import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./databaseManager";
 import { advanceToNextPuzzle } from './ServerManager';
 import { type NextPuzzleResult } from "./ServerManager";
 import { Registry } from "./providers/ProviderRegistry";

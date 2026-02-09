@@ -1,6 +1,6 @@
 import { PuzzleProvider, type MoveResponse } from "./PuzzleProvider";
 import { Providers } from "./ProviderRegistry";
-import type { ActivePuzzle, CollectionSource } from "../database";
+import type { ActivePuzzle, CollectionSource } from "../databaseManager";
 import axios from "axios";
 import { ActionRow } from "discord.js";
 import { coordsToSGF, sgfToCoords } from "../utils/utils";

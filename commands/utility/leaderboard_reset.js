@@ -1,5 +1,5 @@
 const { SlashCommandBuilder,  InteractionContextType, PermissionFlagsBits } = require('discord.js');
-const { resetLeaderboard } = require('../../database.js')
+const { resetLeaderboard } = require('../../databaseManager.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -2,7 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, InteractionContextType } = req
 const schedule = require('node-schedule');
 const cronValidator = require('cron-validator');
 const {annoucePuzzle} = require("../../display.js")
-const {nextPuzzle } = require("../../database.js");
+const {nextPuzzle } = require("../../databaseManager.js");
 
 
 module.exports = {

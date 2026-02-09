@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ComponentBuilder, InteractionResponse,  MessageFlags,  StringSelectMenuBuilder,  StringSelectMenuComponent,  type ActionRowComponent,  type AnyComponentBuilder,  type Message, type MessageActionRowComponentBuilder, type RepliableInteraction, type User } from "discord.js";
 import type { EmbedPackage } from "./MessageBuilder";
-import type { ActivePuzzle, ServerConfig } from "./database";
+import type { ActivePuzzle, ServerConfig } from "./databaseManager";
 
 export async function sendUserDM(user: User, text: string = "", embedPackage?: EmbedPackage): Promise<null | Message> {
     try {
