@@ -63,7 +63,7 @@ export async function getSimulatedBoard(
 
     //add reponse move
     if(responseMove?.responseMove){
-        coord = sgfToCoords(responseMove.responseMove);
+        let coord = sgfToCoords(responseMove.responseMove);
         if(!coord) return false; 
 
         state = game.play(coord.y, coord.x);

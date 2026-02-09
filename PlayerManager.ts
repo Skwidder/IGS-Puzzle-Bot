@@ -1,13 +1,13 @@
-import { Message } from "discord.js"
-import { getServer, getUser, getUserActiveServerState, removeLastMove, resetUserActiveServers, resetUserMoves, setUserActiveServer, type ActivePuzzle, type UserDocument, type UserServerState } from "./database";
+import { Message, type Interaction } from "discord.js"
+import { getServer, getUser, getUserActiveServerState, removeLastMove, resetUserActiveServers, 
+    resetUserMoves, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./database";
 import type { IGSBot } from "./IGSBot";
-import play from "./commands/utility/play";
 import { GoBoardImageBuilder } from "./ImageBuilder";
 import { Position } from "wgo";
-import { binding } from "node:process";
 import { standardNotationToSGF } from "./utils/utils";
 import type { MoveResponse, PuzzleProvider } from "./providers/PuzzleProvider";
 import { getSimulatedBoard } from "./Simulator";
+import { sendPuzzleSelectorMenu, sendUserDM } from "./discordManager";
 
 
 export async function userMessageHandle(message: Message){
@@ -23,21 +23,30 @@ export async function userMessageHandle(message: Message){
         }
 
         const activeServer: UserServerState | null = player?.guilds?.filter(g => g.active === 1)[0] || null;
+        const inProgressServers: UserServerState[] | null =  player?.guilds?.filter(g => g.in_progress === 1) || null; 
 
         if(!activeServer){
-            const inProgressServers: UserServerState[] | null =  player?.guilds?.filter(g => g.in_progress === 1) || null; 
-            if(inProgressServers.length > 1){
-                //set all puzzles to inactive so they can select with the puzzle selector menu
-                resetUserActiveServers(client,player.userId);
-                puzzleSelectorMenu(message,client,message.author.id,inProgressServers);
-                return;
-            }else if(inProgressServers.length == 0){
-                //TODO: Move this to discord file
-                await message.reply("You have no in-progress puzzles, please go on a server and do /play to add one");
+            if(inProgressServers.length == 0){
+                sendUserDM(message.author, "You have no in-progress puzzles, please go on a server and do /play to add one");
                 return;
             }else if(inProgressServers.length == 1){
                 await setUserActiveServer(client,player.userId,inProgressServers[0].guildId);
             }
+        }
+
+        if(inProgressServers?.length > 1){
+            //set all puzzles to inactive so they can select with the puzzle selector menu
+            resetUserActiveServers(client,player.userId);
+            let inProgressGuilds: ServerConfig[] = [];
+
+            for (const server of inProgressServers) {
+                const guild = await getServer(client, server.guildId);
+                if(!guild) continue;
+                inProgressGuilds.push(guild);
+            }
+
+            sendPuzzleSelectorMenu(message.author, inProgressGuilds);
+            return;
         }
         
 
@@ -69,6 +78,7 @@ export async function userMessageHandle(message: Message){
             if (!newMoveSGF) return; //TODO: Let user Know Invalid Move
             response = await puzzleProvider.getMoveResponse(puzzle, activeServer.active_moves, newMoveSGF);
         }
+
         
         //Then simulate and build the image
         const board: Position | false =

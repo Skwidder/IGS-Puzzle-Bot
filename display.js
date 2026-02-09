@@ -231,28 +231,6 @@ async function infoToEmbedFeilds(puzzleInfo) {
     return feilds;
 }
 
-async function puzzleSelectorMenu(interaction,client,userID,inProgressPuzzles){
-    //Want to allow the user to pick what puzzle to play if they have more than one
-    if(inProgressPuzzles.length > 1){
-        const menu = new StringSelectMenuBuilder()
-        .setCustomId('puzzle_select')
-        .addOptions(inProgressPuzzles.map(p => ({
-            label: `Puzzle ${p.guildName}`,
-            value: p.guildId
-        })));
-
-        const row = new ActionRowBuilder()
-        .addComponents(menu);
-
-        //send to DM
-        const user = await interaction.client.users.fetch(interaction.user.id);
-        await user.send({
-            content: 'You have multiple in progress puzzles which would you like to do?',
-            components: [row],
-        });
-    }
-}
-
 async function leaderBoard(interaction,client,guildID,numOfUsersToShow = 10) {
     await interaction.deferReply();
     const users = await getScores(client,guildID);

@@ -24,7 +24,7 @@ export interface ServerConfig {
   name: string;
   puzzle_queue: PuzzleQueueItem[];
   collection_sources: CollectionSource[];
-  active_puzzle: ActivePuzzle;
+  active_puzzle?: ActivePuzzle;
   announcementChannel?: string | null;
   announcementRole?: string | null;
   scheduleExpression?: string | null;
@@ -70,7 +70,7 @@ export async function ensureAllServersExist(client: IGSBot) {
         'serverId': guild.id,
         'name': guild.name,
         'puzzle_queue': [],
-        'approved_collections': []
+        'collection_sources': [],
       });
     }
   }
