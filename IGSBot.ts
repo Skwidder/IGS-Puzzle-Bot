@@ -1,6 +1,6 @@
 import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "discord.js";
 import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
-import * as schedule from "node-schedule";
+
 import { annoucePuzzle } from "./display";
 import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./databaseManager";
 import { advanceToNextPuzzle } from './ServerManager';
@@ -62,22 +62,9 @@ export class IGSBot extends Client {
 
             // Create the scheduled job
             this.scheduledJobs = this.scheduledJobs || {};
-            this.scheduledJobs[guildId] = schedule.scheduleJob(scheduleExpression, async () => {
-                try{
-                    await advanceToNextPuzzle(this,guildId);
-                }catch(error){
-                    console.error(`Server: ${server.name} has no queue or approved collections at scheduled time`);
-                    return;
-                }
+            
 
-                if (!channel){
-                    return;
-                }
-
-                annoucePuzzle(this,guildId,channel,role ?? undefined);
-            });
-
-            console.log(`Creating Schedule for ${server.name} to Run at: ${scheduleExpression}`);
+            
         }
     }
 }

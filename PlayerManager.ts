@@ -1,5 +1,5 @@
 import { Message, type Interaction } from "discord.js"
-import { getServer, getUser, getUserActiveServerState, removeLastMove, resetUserActiveServers, 
+import { getServer, getUser, removeLastMove, resetUserActiveServers, 
     resetUserMoves, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { GoBoardImageBuilder } from "./ImageBuilder";

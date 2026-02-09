@@ -25,9 +25,9 @@ export interface ServerConfig {
   puzzle_queue: PuzzleQueueItem[];
   collection_sources: CollectionSource[];
   active_puzzle?: ActivePuzzle;
-  announcementChannel?: string | null;
-  announcementRole?: string | null;
-  scheduleExpression?: string | null;
+  announcementChannel?: string;
+  announcementRole?: string;
+  scheduleExpression?: string;
 }
 
 export interface PuzzleQueueItem {
@@ -301,5 +301,27 @@ export async function setActivePuzzle(client: IGSBot, guildId: string, puzzle: A
     "serverId": guildId
   },
     { $set: { "active_puzzle": puzzle } }
+  );
+}
+
+export async function setSchedule(client: IGSBot, guildId: string, scheduleExpression: string, channelId: string, role?: string) {
+  await client.serverCol.updateOne({
+    "serverId": guildId
+  },
+  { $set: { 
+    "announcementChannel": channelId,
+    "announcementRole": role, 
+    "scheduleExpression": scheduleExpression }} 
+  );
+}
+
+export async function clearSchedule(client: IGSBot, guildId: string) {
+  await client.serverCol.updateOne({
+    "serverId": guildId
+  },
+  { $unset: { 
+    "announcementChannel": 1,
+    "announcementRole": 1,
+    "scheduleExpression": 1 }} 
   );
 }
