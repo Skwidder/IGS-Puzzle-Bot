@@ -201,35 +201,7 @@ async function annoucePuzzle(client,guildID,channelID,role = ""){
 
 
 
-async function infoToEmbedFeilds(puzzleInfo) {
-    let feilds = [];
-    feilds.push({
-        name: "Collection",
-        value: puzzleInfo.collectionName + "\n\n",
-        inline: true
-    });
 
-    feilds.push({
-        name:'Author',
-        value:  puzzleInfo.author + "\n\n",
-        inline: true
-    });
-
-    //Discord Embed dose not allow a feild to be longer than 1024 characters,
-    //so if the description is longer than that lets just set it to nothing
-    let description = puzzleInfo.description + "\n\n";
-    if(description.length > 1024){
-        return feilds;
-    }
-
-    feilds.push({
-        name: "Description",
-        value:  description + "\n\n",
-        inline: true
-    });
-
-    return feilds;
-}
 
 async function leaderBoard(interaction,client,guildID,numOfUsersToShow = 10) {
     await interaction.deferReply();

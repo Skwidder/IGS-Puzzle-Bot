@@ -1,6 +1,7 @@
 import { sgfToCoords } from "./utils/utils";
 import sharp from 'sharp'
 import { Color } from "wgo";
+import fs from "fs"
 
 
 export class GoBoardImageBuilder {
@@ -19,6 +20,8 @@ export class GoBoardImageBuilder {
         markType: string //"LB" | "MA" | "CR" | "TR" | "SQ" 
         char?: string
     }[] = [];
+
+    private pngPath: string = ""
 
 
     constructor(size = 19) {
@@ -51,6 +54,7 @@ export class GoBoardImageBuilder {
 
     public async saveAsPNG(outputPath = 'goboard.png', padding = 1) {
         const svg = this.generateSVG(padding);
+        this.pngPath = outputPath;
         
         try {
             await sharp(Buffer.from(svg))
@@ -64,6 +68,14 @@ export class GoBoardImageBuilder {
             console.error('Error converting to PNG:', error);
         }
     }
+
+    public async deletePNG(){
+        fs.unlink(this.pngPath, (err) => {
+            if (err) throw err;
+            console.log('path/file.txt was deleted');
+        });
+    }
+
 
     private generateSVG(padding = 1): string {
 

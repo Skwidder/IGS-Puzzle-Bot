@@ -2,10 +2,14 @@ import type { Channel, GuildBasedChannel, GuildChannelResolvable, Interaction, R
 import { clearSchedule, getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, setSchedule, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
 import { type ServerConfig, type UserDocument } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
-import type { PuzzleProvider } from "./providers/PuzzleProvider";
+import { PuzzleProvider } from "./providers/PuzzleProvider";
 import * as schedule from "node-schedule";
 import cronValidator  from 'cron-validator';
-import { interactionReply } from "./discordManager";
+import { interactionReply, sendAnnounceChannelMessage } from "./discordManager";
+import { embedMaker, embedPackager, infoToEmbedFields } from "./MessageBuilder";
+import { getSimulatedBoard } from "./Simulator";
+import type { Position } from "wgo";
+import { GoBoardImageBuilder } from "./ImageBuilder";
 
 //Discriminated Union
 export type NextPuzzleResult = 
@@ -84,6 +88,7 @@ export async function scheduleAnnoucmnet(
 
   client.scheduledJobs[serverId] = await schedule.scheduleJob(scheduleExpression, async () => {
       try{
+          //TODO: Grab result from this function and give user feedback
           await advanceToNextPuzzle(client,serverId);
       }catch(error){
           console.error(`Server: ${guild.name} has no queue or approved collections at scheduled time`);
@@ -142,4 +147,39 @@ export async function turnOffSchedule(interaction: RepliableInteraction){
   await clearSchedule(client, serverId);
 
   interactionReply(interaction, 'Puzzle advancement scheduling has been turned off.');
+}
+
+
+export async function annoucePuzzle(client: IGSBot, guildId: string) {
+  const server: ServerConfig | null = await getServer(client, guildId);
+  if(!server){
+    console.log(`[Announce Puzzle] Server: ${guildId} apprears to be missing`);
+    return;
+  }
+  
+  if(!server.active_puzzle){
+    sendAnnounceChannelMessage(client, guildId, "No active puzzles, please use /next_puzzle to set an active puzzle");
+    return;
+  }
+
+  const board: Position | false = await getSimulatedBoard(server.active_puzzle, []);
+  if(!board) return; //how has this happend
+
+  const builder = new GoBoardImageBuilder(board.size);
+  builder.addWgoGridStones(board.grid);
+  
+  const puzzleProvider: PuzzleProvider = client.providerRegistry.get(server.active_puzzle.source)
+  const marks = await puzzleProvider.getMarks(server.active_puzzle, []);
+  if(marks){
+    builder.addSGFMarks(marks);
+  }
+  
+  await builder.saveAsPNG(`${guildId}.png`);
+
+  const fields = infoToEmbedFields(client, server.active_puzzle, true);
+  const embed = embedMaker(fields);
+  const messagePackage = embedPackager(embed, `${guildId}.png`);
+  await sendAnnounceChannelMessage(client, guildId, `<@&${server?.announcementRole}>` || undefined, messagePackage);
+
+  builder.deletePNG();
 }

@@ -1,4 +1,4 @@
-import { Message, type Interaction } from "discord.js"
+import { Message, type APIEmbedField, type Interaction } from "discord.js"
 import { getServer, getUser, removeLastMove, resetUserActiveServers, 
     resetUserMoves, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
@@ -8,6 +8,8 @@ import { standardNotationToSGF } from "./utils/utils";
 import type { MoveResponse, PuzzleProvider } from "./providers/PuzzleProvider";
 import { getSimulatedBoard } from "./Simulator";
 import { sendPuzzleSelectorMenu, sendUserDM } from "./discordManager";
+import { embedMaker, embedPackager, infoToEmbedFeilds, infoToEmbedFields, type EmbedPackage } from "./MessageBuilder";
+
 
 
 export async function userMessageHandle(message: Message){
@@ -106,8 +108,14 @@ export async function userMessageHandle(message: Message){
 
         const pngPath = `${player.userId}.png`
         builder.saveAsPNG(pngPath);
-        
-        //TODO: send to user
+       
+        //build and send the message
+        const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle,false,false, response?.isCorrect ?? false); 
+        const embed = embedMaker(fields);
+        const messagePackage: EmbedPackage = embedPackager(embed,pngPath);
+        await sendUserDM(message.author, "", messagePackage);
+
+        builder.deletePNG();
     }
 }
 
