@@ -1,6 +1,7 @@
-import { Events, MessageFlags, type Interaction } from "discord.js"
+import { Events, MessageFlags, type AnySelectMenuInteraction, type Interaction } from "discord.js"
 import { runAndSendBoard } from "../display.js";
 import type { IGSBot } from "../IGSBot.js";
+import { interactionHandle } from "../PlayerManager.js";
 
 export default {
 	name: Events.InteractionCreate,
@@ -25,19 +26,8 @@ export default {
 				}
 			}
 		}else if(interaction.isAnySelectMenu()){
-			// console.log(interaction);
-
 			if (interaction.customId === 'puzzle_select') {
-				await interaction.update({ content: 'Puzzle Selected!', components: [] });
-
-				await client.usersCol.updateOne({ 
-                    "userId" : interaction.user.id,
-                    "guilds.guildId" : interaction.values[0]
-                }, { $set : {
-                    "guilds.$.active" : 1
-                }});
-
-				runAndSendBoard(interaction.client,interaction.user.id,"",true,true);
+				interactionHandle(interaction as AnySelectMenuInteraction);
 			}
 		}
 	},

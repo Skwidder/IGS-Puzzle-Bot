@@ -1,6 +1,6 @@
-import { Message, type APIEmbedField, type Interaction } from "discord.js"
+import { Client, Message, type AnySelectMenuInteraction, type APIEmbedField, type Interaction, type RepliableInteraction } from "discord.js"
 import { getServer, getUser, removeLastMove, resetUserActiveServers, 
-    resetUserMoves, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
+    resetUserMoves, setActivePuzzle, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { GoBoardImageBuilder } from "./ImageBuilder";
 import { Position } from "wgo";
@@ -77,7 +77,10 @@ export async function userMessageHandle(message: Message){
             await removeLastMove(client, player.userId);
         }else{
             newMoveSGF = standardNotationToSGF(puzzle.initialPlayer, message.content.trim().slice(1,3), puzzle.size);
-            if (!newMoveSGF) return; //TODO: Let user Know Invalid Move
+            if (!newMoveSGF){
+                sendUserDM(message.author, "Invalid Move, please provide a valid move");
+                return;
+            } 
             response = await puzzleProvider.getMoveResponse(puzzle, activeServer.active_moves, newMoveSGF);
         }
 
@@ -86,7 +89,10 @@ export async function userMessageHandle(message: Message){
         const board: Position | false =
                 await getSimulatedBoard(puzzle, activeServer.active_moves, newMoveSGF, response);
 
-        if(!board) return; //TODO: Let user Know Invalid Move
+        if(!board){
+            sendUserDM(message.author, "Invalid Move, please provide a valid move");
+            return;
+        } 
 
         const builder = new GoBoardImageBuilder(board.size);
         builder.addWgoGridStones(board.grid);
@@ -125,4 +131,55 @@ async function getUserActivePuzzle(client:IGSBot, user: UserDocument): Promise<A
     const server = await getServer(client, activeServer.guildId);
     
     return server?.active_puzzle;
+}
+
+
+
+
+export async function interactionHandle(interaction: AnySelectMenuInteraction){
+    await interaction.update({ content: 'Puzzle Selected!', components: [] });
+
+    const client: IGSBot = interaction.client as IGSBot;
+    await setUserActiveServer(client, interaction.user.id, interaction.values[0]);
+
+    const user = await getUser(client,interaction.user.id);
+    if(!user) throw Error("[Player Manager] User responded to select string but is not a user?");
+    const puzzle = await getUserActivePuzzle(client, user);
+    if(!puzzle) throw Error("[Player Manager] Race Condition");    
+    
+    const activeServer: UserServerState | null = user?.guilds?.filter(g => g.active === 1)[0] || null;
+    if(!activeServer) throw Error("[Player Manager] Race Condition");
+
+
+    const board: Position | false =
+                await getSimulatedBoard(puzzle, activeServer.active_moves);
+    
+    if(!board){
+        sendUserDM(interaction.user, "Invalid Move, please provide a valid move");
+        return;
+    }
+
+    const builder = new GoBoardImageBuilder(board.size);
+    builder.addWgoGridStones(board.grid);
+
+    const puzzleProvider: PuzzleProvider = client.providerRegistry.get(puzzle.source);
+
+    const marks = await puzzleProvider.getMarks(puzzle,activeServer.active_moves);
+    if(marks){
+        if(activeServer.active_moves[-1]){
+            marks.push(`CR[${activeServer.active_moves[-1].substring(2,4)}]`);
+        }
+        builder.addSGFMarks(marks);
+    }
+
+    const pngPath = `${interaction.user.id}.png`
+    builder.saveAsPNG(pngPath);
+    
+    //build and send the message
+    const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle, false, true); 
+    const embed = embedMaker(fields);
+    const messagePackage: EmbedPackage = embedPackager(embed,pngPath);
+    await sendUserDM(interaction.user, "", messagePackage);
+
+    builder.deletePNG();
 }
