@@ -1,5 +1,4 @@
 import { Events, MessageFlags, type AnySelectMenuInteraction, type Interaction } from "discord.js"
-import { runAndSendBoard } from "../display.js";
 import type { IGSBot } from "../IGSBot.js";
 import { interactionHandle } from "../PlayerManager.js";
 
