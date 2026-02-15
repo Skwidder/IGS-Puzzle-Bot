@@ -65,6 +65,8 @@ module.exports = {
         const guildId = interaction.guildId;
         const channel = interaction.options.getChannel('channel');
         let role = interaction.options.getRole('role');
+        
+        let cronExpression = "";
 
         switch (subcommand) {
             case 'daily':

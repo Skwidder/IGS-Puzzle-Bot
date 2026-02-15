@@ -53,6 +53,7 @@ export interface CollectionSource {
   source: Providers;
   type: 'COLLECTION' | 'SEARCH';
   payload: string | number;
+  name?: string;
 }
 
 export async function ensureAllServersExist(client: IGSBot) {
@@ -331,5 +332,14 @@ export async function createDBUser(client: IGSBot, userId: string): Promise<Inse
   return await client.usersCol.insertOne({
     "userId": userId,
     "guilds": [],
+  });
+}
+
+export async function createDBServer(client: IGSBot, guildId: string, guildName: string){
+  await client.serverCol.insertOne({
+    'serverId' : guildId,
+    'name' : guildName,  
+    'puzzle_queue' : [],
+    'collection_sources': [],
   });
 }

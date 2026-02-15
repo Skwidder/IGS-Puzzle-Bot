@@ -1,6 +1,7 @@
 import { Events, MessageFlags, type AnySelectMenuInteraction, type Interaction } from "discord.js"
 import type { IGSBot } from "../IGSBot.js";
 import { interactionHandle } from "../PlayerManager.js";
+import { interactionReply } from "../discordManager.js";
 
 export default {
 	name: Events.InteractionCreate,
@@ -18,11 +19,7 @@ export default {
 				await command.execute(interaction);
 			} catch (error) {
 				console.error(error);
-				if (interaction.replied || interaction.deferred) {
-					await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-				} else {
-					await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-				}
+				await interactionReply(interaction,'There was an error while executing this command!', undefined, true);
 			}
 		}else if(interaction.isAnySelectMenu()){
 			if (interaction.customId === 'puzzle_select') {
