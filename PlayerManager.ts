@@ -1,5 +1,5 @@
 import { Client, Message, type AnySelectMenuInteraction, type APIEmbedField, type Interaction, type RepliableInteraction } from "discord.js"
-import { getServer, getUser, removeLastMove, resetUserActiveServers, 
+import { createDBUser, getServer, getUser, removeLastMove, resetUserActiveServers, 
     resetUserMoves, setActivePuzzle, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { GoBoardImageBuilder } from "./ImageBuilder";
@@ -8,7 +8,7 @@ import { standardNotationToSGF } from "./utils/utils";
 import type { MoveResponse, PuzzleProvider } from "./providers/PuzzleProvider";
 import { getSimulatedBoard } from "./Simulator";
 import { sendPuzzleSelectorMenu, sendUserDM } from "./discordManager";
-import { embedMaker, embedPackager, infoToEmbedFeilds, infoToEmbedFields, type EmbedPackage } from "./MessageBuilder";
+import { embedMaker, embedPackager, infoToEmbedFields, type EmbedPackage } from "./MessageBuilder";
 
 
 
@@ -182,4 +182,11 @@ export async function interactionHandle(interaction: AnySelectMenuInteraction){
     await sendUserDM(interaction.user, "", messagePackage);
 
     builder.deletePNG();
+}
+
+async function createUser(client: IGSBot, userId: string): Promise<UserDocument | null> {
+    const result = await createDBUser(client, userId);
+    if(!result.acknowledged) throw Error(`[Player Manager]: User creation failed id ${userId}`);
+
+    return await getUser(client, userId);
 }

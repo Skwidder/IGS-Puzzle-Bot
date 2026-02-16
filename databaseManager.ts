@@ -1,6 +1,7 @@
 import { Client } from 'discord.js';
 import { IGSBot } from './IGSBot';
 import type { Providers } from './providers/PuzzleProvider';
+import type { InsertOneResult } from 'mongodb';
 
 export interface UserServerState {
   guildId: string;
@@ -13,7 +14,7 @@ export interface UserServerState {
   all_time_score: number;
 }
 export interface UserDocument {
-  _id: any;
+  _id?: any;
   userId: string;
   guilds: UserServerState[];
 }
@@ -50,6 +51,7 @@ export interface ActivePuzzle {
 
 export interface CollectionSource {
   source: Providers;
+  name: string;
   type: 'COLLECTION' | 'SEARCH';
   payload: string | number;
 }
@@ -324,4 +326,20 @@ export async function clearSchedule(client: IGSBot, guildId: string) {
     "announcementRole": 1,
     "scheduleExpression": 1 }} 
   );
+}
+  
+export async function createDBUser(client: IGSBot, userId: string): Promise<InsertOneResult<UserDocument>>{
+  return await client.usersCol.insertOne({
+    "userId": userId,
+    "guilds": [],
+  });
+}
+
+export async function createDBServer(client: IGSBot, guildId: string, guildName: string){
+  await client.serverCol.insertOne({
+    'serverId' : guildId,
+    'name' : guildName,  
+    'puzzle_queue' : [],
+    'collection_sources': [],
+  });
 }

@@ -26,7 +26,7 @@ export class IGSBot extends Client {
             ]
         });
 
-        this.mongo = new MongoClient(Bun.env.DBCONNSTRING!);
+        this.mongo = new MongoClient(Bun.env.DBCONNSTRING || "");
     }
 
     async start() {
@@ -38,8 +38,6 @@ export class IGSBot extends Client {
         console.log("Mongo DB Connected");
 
         await this.login(Bun.env.DISCORD_TOKEN);
-
-        console.log("Discord Bot Logged In");
 
         await ensureAllServersExist(this);
         await this.scheduleJobs();
