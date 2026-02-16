@@ -21,5 +21,9 @@ export abstract class PuzzleProvider {
     
     abstract getMoveResponse(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse>;
 
-    abstract getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined>
+    abstract getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined>;
+
+    abstract getCollectionByName(collectionName: string): Promise<CollectionSource | null>;
+
+    abstract getCollectionByID(collectionId: string): Promise<CollectionSource | null>;
 }

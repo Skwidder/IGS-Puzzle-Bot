@@ -24,4 +24,8 @@ export class Registry {
         }
     return provider
     }
+    
+    getAll(): Map<Providers, PuzzleProvider> {
+        return this.providers
+    }
 }

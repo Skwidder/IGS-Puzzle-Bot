@@ -25,6 +25,8 @@ export default {
 			if (interaction.customId === 'puzzle_select') {
 				interactionHandle(interaction as AnySelectMenuInteraction);
 			}
+		} else if(interaction.isAutocomplete()){
+			console.log(`Its go time ${interaction.commandName}`);
 		}
 	},
 };
