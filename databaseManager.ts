@@ -51,9 +51,9 @@ export interface ActivePuzzle {
 
 export interface CollectionSource {
   source: Providers;
+  name: string;
   type: 'COLLECTION' | 'SEARCH';
   payload: string | number;
-  name?: string;
 }
 
 export async function ensureAllServersExist(client: IGSBot) {

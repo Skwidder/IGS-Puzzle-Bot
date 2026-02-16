@@ -6,18 +6,19 @@ import { IGSBot } from './IGSBot';
 //^^ should be able to remove and use .env
 
 const igsbot: IGSBot = new IGSBot();
-await igsbot.start();
 
-igsbot.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
-		const command = require(filePath);
+		const command = require(filePath)?.default;
+
+		if(!command) continue;
+
 		if ('data' in command && 'execute' in command) {
 			igsbot.commands.set(command.data.name, command);
 		} else {
@@ -27,11 +28,13 @@ for (const folder of commandFolders) {
 }
 
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
-	const event = require(filePath);
+	const event = require(filePath)?.default;
+
+	if(!event) continue;
+
 	if (event.once) {
 		igsbot.once(event.name, (...args) => event.execute(...args));
 	} else {
@@ -39,3 +42,5 @@ for (const file of eventFiles) {
 	}
 }
 
+
+await igsbot.start();
