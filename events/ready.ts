@@ -1,7 +1,7 @@
 import type { IGSBot } from '../IGSBot.js';
 import { Events } from 'discord.js';
 
-module.exports = {
+export default {
     name: Events.ClientReady,
     once: true,
     async execute(client: IGSBot){

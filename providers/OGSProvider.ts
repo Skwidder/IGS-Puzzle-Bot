@@ -2,7 +2,7 @@ import { PuzzleProvider, type MoveResponse } from "./PuzzleProvider";
 import { Providers } from "./ProviderRegistry";
 import type { ActivePuzzle, CollectionSource } from "../databaseManager";
 import axios from "axios";
-import { ActionRow } from "discord.js";
+import { ActionRow, type AutocompleteFocusedOption } from "discord.js";
 import { coordsToSGF, sgfToCoords } from "../utils/utils";
 
 export class OGSProvider extends PuzzleProvider{
@@ -205,5 +205,10 @@ export class OGSProvider extends PuzzleProvider{
             }
         }
         return marks;
+    }
+    
+
+    collectionAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null {
+        return [{name: "test", value: "1"}];
     }
 }

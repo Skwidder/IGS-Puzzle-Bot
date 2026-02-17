@@ -1,3 +1,4 @@
+import type { AutocompleteFocusedOption } from "discord.js";
 import type { ActivePuzzle, CollectionSource } from "../databaseManager";
 import type { Providers } from "./ProviderRegistry";
 
@@ -26,4 +27,6 @@ export abstract class PuzzleProvider {
     abstract getCollectionByName(collectionName: string): Promise<CollectionSource | null>;
 
     abstract getCollectionByID(collectionId: string): Promise<CollectionSource | null>;
+
+    abstract collectionAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null;
 }

@@ -28,4 +28,11 @@ export class Registry {
     getAll(): Map<Providers, PuzzleProvider> {
         return this.providers
     }
+
+    getAllNames(): {name: string, value: Providers}[] {
+        return Array.from(this.providers.values()).map(p => ({
+            name: p.name,
+            value: p.slug
+        }));
+    }
 }
