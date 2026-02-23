@@ -4,6 +4,7 @@ import type { ActivePuzzle, CollectionSource } from "../databaseManager";
 import axios from "axios";
 import { ActionRow, type AutocompleteFocusedOption } from "discord.js";
 import { coordsToSGF, sgfToCoords } from "../utils/utils";
+import { request } from "node:http";
 
 export class OGSProvider extends PuzzleProvider{
     readonly name = "Online Go Server";
@@ -208,11 +209,44 @@ export class OGSProvider extends PuzzleProvider{
     }
     
 
-    collectionAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null {
-        return [{name: "test", value: "1"}];
+    async searchCollection(searchString: string): Promise<CollectionSource | "NO_COLLECTION_FOUND" | "COLLECTION_PRIVATE"> {
+        try{
+            const name = encodeURIComponent(searchString);
+            const response = await axios.get("https://online-go.com/api/v1/puzzles/collections?name=" + name);
+        }catch(error){
+            // await interaction.reply("Error getting collection, collection may be private");
+            return;
+        }
+
+        if (response.data.count == 0){
+            // await interaction.reply("Error Finding Collection, Please Check the Name!");
+            return;
+        }
+
+        if (response.data.count > 1){
+            await interaction.reply("More than 1 collection found! Please verify name");
+        }
+
+        return response.data.results[0].id;
     }
     
-    puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): { name: string; value: string; }[] | null {
+
+    async collectionAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{name: string, value: string}[] | null> {
+        const name = encodeURI(focusedOption.value);
+        
+        //grab results that contain the current focus value
+        const response = await axios.get(`${this.baseURL}collections?page_size=25&name__icontains=${name}`);
+        if(!response || response.status !== 200) return null;
+        const options = response.data.results.map(collection => {
+            return {
+                name: collection.name,
+                value: String(collection.id)
+            }
+        })
+        return options;
+    }
+    
+    puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{ name: string, value: string}[] | null> {
         return [{name: "test", value: "2"}];
     }
 }

@@ -24,11 +24,9 @@ export abstract class PuzzleProvider {
 
     abstract getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined>;
 
-    abstract getCollectionByName(collectionName: string): Promise<CollectionSource | null>;
+    abstract searchCollection(searchString: string): Promise<CollectionSource | null>;
 
-    abstract getCollectionByID(collectionId: string): Promise<CollectionSource | null>;
-
-    abstract collectionAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null;
+    abstract collectionAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{name: string, value: string}[] | null>;
     
-    abstract puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null;
+    abstract puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{name: string, value: string}[] | null>;
 }

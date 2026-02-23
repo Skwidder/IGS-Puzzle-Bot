@@ -125,9 +125,9 @@ export async function autocompleteHandler(interaction: AutocompleteInteraction){
 
         let results: {name: string, value: string}[] | null = []
         if(interaction.commandName === 'collection'){
-            results = provider.collectionAutocomplete(focusedOption);
+            results = await provider.collectionAutocomplete(focusedOption);
         } else if (interaction.commandName === 'puzzle'){
-            results = provider.puzzleAutocomplete(focusedOption);
+            results = await provider.puzzleAutocomplete(focusedOption);
         }
         
         if (!results) {

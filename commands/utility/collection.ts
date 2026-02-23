@@ -26,7 +26,9 @@ const data = new SlashCommandBuilder()
                 
 
 async function execute(interaction: ChatInputCommandInteraction){
-    await interaction.reply("test");
+    const website = interaction.options.getString('website');
+    const search  = interaction.options.getString('search');
+    await interaction.reply(`${website}: ${search}`);
 }
 
 export default { data, execute };
