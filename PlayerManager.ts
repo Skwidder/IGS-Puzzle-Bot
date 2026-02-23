@@ -1,4 +1,4 @@
-import { Client, Message, type AnySelectMenuInteraction, type APIEmbedField, type Interaction, type RepliableInteraction } from "discord.js"
+import { ChatInputCommandInteraction, Client, Message, User, type AnySelectMenuInteraction, type APIEmbedField, type Interaction, type RepliableInteraction } from "discord.js"
 import { createDBUser, getServer, getUser, removeLastMove, resetUserActiveServers, 
     resetUserMoves, setActivePuzzle, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
@@ -16,23 +16,28 @@ export async function userMessageHandle(message: Message){
     if(message.content[0] == '!'){
 
         const client: IGSBot = message.client as IGSBot;
-        const player: UserDocument | null = await getUser(client, message.author.id);
+        let player: UserDocument | null = await getUser(client, message.author.id);
         
         //Should be unlikily as /play should create the user but lets be safe
         if(!player){
-            //TODO: Create Player?
-            throw new Error("pelase implment");
+            player = await createUser(client, message.author.id);
+            if(!player) {
+                throw Error("Player dose not exist and could not be created");
+                return;
+            }
         }
 
         const activeServer: UserServerState | null = player?.guilds?.filter(g => g.active === 1)[0] || null;
         const inProgressServers: UserServerState[] | null =  player?.guilds?.filter(g => g.in_progress === 1) || null; 
 
         if(!activeServer){
-            if(inProgressServers.length == 0){
+            if(!inProgressServers || inProgressServers.length == 0){
                 sendUserDM(message.author, "You have no in-progress puzzles, please go on a server and do /play to add one");
                 return;
             }else if(inProgressServers.length == 1){
                 await setUserActiveServer(client,player.userId,inProgressServers[0].guildId);
+                userMessageHandle(message);
+                return;
             }
         }
 
@@ -84,56 +89,15 @@ export async function userMessageHandle(message: Message){
             response = await puzzleProvider.getMoveResponse(puzzle, activeServer.active_moves, newMoveSGF);
         }
 
-        
-        //Then simulate and build the image
-        const board: Position | false =
-                await getSimulatedBoard(puzzle, activeServer.active_moves, newMoveSGF, response);
-
-        if(!board){
-            sendUserDM(message.author, "Invalid Move, please provide a valid move");
-            return;
-        } 
-
-        const builder = new GoBoardImageBuilder(board.size);
-        builder.addWgoGridStones(board.grid);
-        if(response?.marks){
-            //Add circle on response move
-            if(response.responseMove){
-                response.marks.push(`CR[${response.responseMove.substring(2,4)}]`);
-            }
-            builder.addSGFMarks(response.marks);
-        } else {
-            const marks = await puzzleProvider.getMarks(puzzle,activeServer.active_moves);
-            if(marks){
-                if(activeServer.active_moves[-1]){
-                    marks.push(`CR[${activeServer.active_moves[-1].substring(2,4)}]`);
-                }
-                builder.addSGFMarks(marks);
-            }
+        const renderOptions: RenderBoardOptions = {
+            newMoveSGF: newMoveSGF,
+            response: response,
         }
-
-        const pngPath = `${player.userId}.png`
-        builder.saveAsPNG(pngPath);
-       
-        //build and send the message
-        const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle,false,false, response?.isCorrect ?? false); 
-        const embed = embedMaker(fields);
-        const messagePackage: EmbedPackage = embedPackager(embed,pngPath);
-        await sendUserDM(message.author, "", messagePackage);
-
-        builder.deletePNG();
+        
+        renderAndSendBoard(client, message.author, puzzle, activeServer.active_moves, renderOptions);
     }
+    sendUserDM(message.author,"Invalid Command!");
 }
-
-async function getUserActivePuzzle(client:IGSBot, user: UserDocument): Promise<ActivePuzzle | undefined> {
-
-    const activeServer: UserServerState | null = user?.guilds?.filter(g => g.active === 1)[0] || null;
-    const server = await getServer(client, activeServer.guildId);
-    
-    return server?.active_puzzle;
-}
-
-
 
 
 export async function interactionHandle(interaction: AnySelectMenuInteraction){
@@ -150,38 +114,143 @@ export async function interactionHandle(interaction: AnySelectMenuInteraction){
     const activeServer: UserServerState | null = user?.guilds?.filter(g => g.active === 1)[0] || null;
     if(!activeServer) throw Error("[Player Manager] Race Condition");
 
+    const renderOptions: RenderBoardOptions = {
+        showHelp: true
+    }
 
-    const board: Position | false =
-                await getSimulatedBoard(puzzle, activeServer.active_moves);
+    renderAndSendBoard(client, interaction.user, puzzle, activeServer.active_moves, renderOptions);
+}
+
+export async function playerPlay(interaction: ChatInputCommandInteraction){
+    const client: IGSBot = interaction.client as IGSBot;
+
+    let player: UserDocument | null = await getUser(client, interaction.user.id);
+    if(!player){
+        player = await createUser(client, interaction.user.id);
+        if(!player) {
+            throw Error("Player dose not exist and could not be created");
+            return;
+        }
+    }
+
+    if(!interaction.guild) throw Error("/play not on a server?");
     
-    if(!board){
-        sendUserDM(interaction.user, "Invalid Move, please provide a valid move");
+    let activeServer: UserServerState | null = player?.guilds?.filter(g => g.active === 1)[0] || null;
+    const inProgressServers: UserServerState[] | null =  player?.guilds?.filter(g => g.in_progress === 1) || null; 
+
+    if(!activeServer){
+        if(!inProgressServers || inProgressServers.length == 0){
+            await setUserActiveServer(client, interaction.user.id, interaction.guild.id);
+            playerPlay(interaction);
+            return;
+        }else if(inProgressServers.length == 1){
+            await setUserActiveServer(client,player.userId,inProgressServers[0].guildId);
+            playerPlay(interaction);
+            return;
+        }
+    }
+
+    if(inProgressServers?.length > 1){
+        //set all puzzles to inactive so they can select with the puzzle selector menu
+        resetUserActiveServers(client,player.userId);
+        let inProgressGuilds: ServerConfig[] = [];
+
+        for (const server of inProgressServers) {
+            const guild = await getServer(client, server.guildId);
+            if(!guild) continue;
+            inProgressGuilds.push(guild);
+        }
+
+        sendPuzzleSelectorMenu(interaction.user, inProgressGuilds);
         return;
     }
 
+    const puzzle: ActivePuzzle | undefined = await getUserActivePuzzle(client,player);
+    
+    if(!puzzle) throw Error("How do we have an active server but no active puzzle?");
+
+    const puzzleProvider: PuzzleProvider = client.providerRegistry.get(puzzle.source);
+    
+    const renderOptions: RenderBoardOptions = {
+        showHelp: true,
+    }
+
+    renderAndSendBoard(client, interaction.user, puzzle, activeServer.active_moves, renderOptions);
+}
+
+interface RenderBoardOptions {
+    newMoveSGF?: string | null;
+    response?: MoveResponse;
+    showHelp?: boolean; // Maps to the 4th argument in infoToEmbedFields
+}
+
+async function renderAndSendBoard(
+    client: IGSBot,
+    user: User,
+    puzzle: ActivePuzzle,
+    activeMoves: string[],
+    options: RenderBoardOptions = {}
+) {
+    let { newMoveSGF, response, showHelp = false } = options;
+
+    // take care of null newMoveSGF
+    if(!newMoveSGF){
+        newMoveSGF = undefined;
+    }
+
+    // Simulate the board
+    const board: Position | false = await getSimulatedBoard(puzzle, activeMoves, newMoveSGF, response);
+
+    if (!board) {
+        await sendUserDM(user, "Invalid Move, please provide a valid move");
+        return;
+    }
+
+    // Build Image and Grid
     const builder = new GoBoardImageBuilder(board.size);
     builder.addWgoGridStones(board.grid);
 
+    //Process Marks
     const puzzleProvider: PuzzleProvider = client.providerRegistry.get(puzzle.source);
-
-    const marks = await puzzleProvider.getMarks(puzzle,activeServer.active_moves);
-    if(marks){
-        if(activeServer.active_moves[-1]){
-            marks.push(`CR[${activeServer.active_moves[-1].substring(2,4)}]`);
+    
+    if (response?.marks) {
+        if (response.responseMove) {
+            response.marks.push(`CR[${response.responseMove.substring(2, 4)}]`);
         }
-        builder.addSGFMarks(marks);
+        builder.addSGFMarks(response.marks);
+    } else {
+        const marks = await puzzleProvider.getMarks(puzzle, activeMoves);
+        if (marks) {
+            const lastMove = activeMoves.at(-1); 
+            if (lastMove) {
+                marks.push(`CR[${lastMove.substring(2, 4)}]`);
+            }
+            builder.addSGFMarks(marks);
+        }
     }
 
-    const pngPath = `${interaction.user.id}.png`
+    // Save Image
+    const pngPath = `${user.id}.png`;
     builder.saveAsPNG(pngPath);
-    
-    //build and send the message
-    const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle, false, true); 
-    const embed = embedMaker(fields);
-    const messagePackage: EmbedPackage = embedPackager(embed,pngPath);
-    await sendUserDM(interaction.user, "", messagePackage);
 
+    // Build and send the embed message
+    const isCorrect = response?.isCorrect ?? false;
+    const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle, false, showHelp, isCorrect);
+    const embed = embedMaker(fields);
+    const messagePackage: EmbedPackage = embedPackager(embed, pngPath);
+    
+    await sendUserDM(user, "", messagePackage);
+
+    // Cleanup
     builder.deletePNG();
+}
+
+async function getUserActivePuzzle(client:IGSBot, user: UserDocument): Promise<ActivePuzzle | undefined> {
+
+    const activeServer: UserServerState | null = user?.guilds?.filter(g => g.active === 1)[0] || null;
+    const server = await getServer(client, activeServer.guildId);
+    
+    return server?.active_puzzle;
 }
 
 async function createUser(client: IGSBot, userId: string): Promise<UserDocument | null> {

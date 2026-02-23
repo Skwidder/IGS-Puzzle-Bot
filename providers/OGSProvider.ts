@@ -93,7 +93,7 @@ export class OGSProvider extends PuzzleProvider{
         endCheck = this.checkIfSequanceEnd(moveTree)
         if(endCheck) return endCheck; 
 
-        const marks: string[] = await this.getMarks(moveTree);
+        const marks: string[] | undefined = await this.getMarks(moveTree,moves);
 
         //if we havent left yet then its just a response not a end
         return {

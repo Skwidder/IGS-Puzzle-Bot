@@ -52,13 +52,17 @@ export async function sendPuzzleSelectorMenu(user: User, inProgressServers: Serv
     }
 }
 
-export async function sendAnnounceChannelMessage(client: IGSBot, serverId: string, text: string = "", embedPackage?: EmbedPackage):
+export async function sendAnnounceChannelMessage(client: IGSBot, 
+    serverId: string, 
+    text: string = "", 
+    embedPackage?: EmbedPackage, 
+    channelId? :string):
     Promise<Message | null> {
 
     const server: ServerConfig | null = await getServer(client, serverId);
     if(!server || !server?.announcementChannel) return null;
 
-    return await sendChannelMessage(client, server.announcementChannel);
+    return await sendChannelMessage(client, channelId ?? server.announcementChannel, text, embedPackage);
 }
 
 export async function sendChannelMessage(client: IGSBot, channelId: string, text: string = "", embedPackage?: EmbedPackage):

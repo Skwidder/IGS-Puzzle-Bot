@@ -1,5 +1,5 @@
-import type { Channel, GuildBasedChannel, GuildChannelResolvable, Interaction, RepliableInteraction, Role, StageInstance } from "discord.js";
-import { clearSchedule, getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, setSchedule, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
+import { EmbedBuilder, type Channel, type ChatInputCommandInteraction, type GuildBasedChannel, type GuildChannelResolvable, type Interaction, type RepliableInteraction, type Role, type StageInstance } from "discord.js";
+import { clearSchedule, getScores, getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, setSchedule, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
 import { type ServerConfig, type UserDocument } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { PuzzleProvider } from "./providers/PuzzleProvider";
@@ -49,7 +49,7 @@ export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Prom
   if(!nextPuzzle) return {success: false, errorType: "DB_ERROR"}; //it must be a db error or a race condition
 
   const provider: PuzzleProvider = await client.providerRegistry.get(nextPuzzle.source);
-  const puzzle: ActivePuzzle = await provider.fetchPuzzle(nextPuzzle.puzzleId);
+  const puzzle: ActivePuzzle | null = await provider.fetchPuzzle(nextPuzzle.puzzleId);
   
   if(!puzzle) return {success: false, errorType: 'PUZZLE_NOT_FOUND'}
 
@@ -95,7 +95,7 @@ export async function scheduleAnnoucmnet(
           return;
       }
 
-      annoucePuzzle(client,serverId,channel,role ?? undefined);
+      annoucePuzzle(client,serverId);
   });
 
   console.log(`Creating Schedule for ${guild.name} to Run at: ${scheduleExpression}`);
@@ -150,7 +150,7 @@ export async function turnOffSchedule(interaction: RepliableInteraction){
 }
 
 
-export async function annoucePuzzle(client: IGSBot, guildId: string) {
+export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?: string, roleId?: string) {
   const server: ServerConfig | null = await getServer(client, guildId);
   if(!server){
     console.log(`[Announce Puzzle] Server: ${guildId} apprears to be missing`);
@@ -179,7 +179,53 @@ export async function annoucePuzzle(client: IGSBot, guildId: string) {
   const fields = infoToEmbedFields(client, server.active_puzzle, true);
   const embed = embedMaker(fields);
   const messagePackage = embedPackager(embed, `${guildId}.png`);
-  await sendAnnounceChannelMessage(client, guildId, `<@&${server?.announcementRole}>` || undefined, messagePackage);
+  await sendAnnounceChannelMessage(client, guildId, `<@&${roleId ?? server?.announcementRole}>` || undefined, messagePackage, channelId);
 
   builder.deletePNG();
+}
+
+
+export async function showLeaderBoard(interaction: ChatInputCommandInteraction,numOfUsersToShow: number = 10) {
+    await interaction.deferReply();
+
+    const client: IGSBot = interaction.client as IGSBot;
+
+    if(!interaction.guildId || !interaction.guild) throw Error("/Leaderbaord not on server");
+
+    const users = await getScores(client, interaction.guildId);
+
+    const topUsers = users
+        .sort((a,b) => b.score - a.score)
+        .slice(0,numOfUsersToShow);
+
+    let validUsers = [];
+
+    for (const user of topUsers){
+        try{
+            //Try first to get the members from cache, if that fails fall back to the slow way!
+            const member = interaction.guild.members.cache.get(user.userId) || await interaction.guild.members.fetch(user.userId);
+            user.name = member.displayName;
+            validUsers.push(user);
+        }catch(DiscordAPIError){
+            user.name = "temp";
+            validUsers.push(user);
+            continue;
+        }
+    }
+
+    if(validUsers.length < 1){
+        interaction.editReply("No users on the leaderboard");
+        return;
+    }
+
+    const embed = new EmbedBuilder()
+    .setColor('#0099ff')
+    .setTitle('Leaderboard')
+    .setDescription(
+        validUsers.sort((a, b) => b.score - a.score)
+        .map((user, index) => `#${index + 1} ${user.name}: ${user.score}`)
+        .join('\n')
+    )
+
+    interaction.editReply({ embeds: [embed] });
 }

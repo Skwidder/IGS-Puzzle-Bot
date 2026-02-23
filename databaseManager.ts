@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import { IGSBot } from './IGSBot';
-import type { Providers } from './providers/PuzzleProvider';
+import type { Providers } from './providers/ProviderRegistry';
 import type { InsertOneResult } from 'mongodb';
 
 export interface UserServerState {
@@ -210,7 +210,7 @@ export async function setSolved(client: IGSBot, userId: string, solved: boolean 
 }
 
 export async function setUserActiveServer(client: IGSBot, userId: string, activeServerId: string){
-  await client.usersCol.updateOne(
+  const response = await client.usersCol.updateOne(
     {
       "userId": userId,
       "guilds.id": activeServerId
@@ -221,6 +221,30 @@ export async function setUserActiveServer(client: IGSBot, userId: string, active
       }
     }
   );
+
+  if(response.matchedCount === 0){
+    //Add server to the user
+    client.usersCol.updateOne(
+      { 
+          userId: userId,
+      },
+      {
+          $push : {
+              guilds: {
+                  guildId: activeServerId,
+                  score : 0,
+                  active_moves: [],
+                  tries: 0,
+                  active: 0,
+                  in_progress: 1,
+                  solved: false,
+                  all_time_score: 0
+              }
+          }
+      },
+      { upsert: true }
+    );
+  }
 }
 
 export async function resetUserActiveServers(client: IGSBot, userId: string){
