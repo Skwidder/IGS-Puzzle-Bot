@@ -1,7 +1,7 @@
-import { Events, MessageFlags, type AnySelectMenuInteraction, type Interaction } from "discord.js"
+import { AutocompleteInteraction, Events, MessageFlags, type AnySelectMenuInteraction, type Interaction } from "discord.js"
 import type { IGSBot } from "../IGSBot.js";
 import { interactionHandle } from "../PlayerManager.js";
-import { interactionReply } from "../discordManager.js";
+import { autocompleteHandler, interactionReply } from "../discordManager.js";
 
 export default {
 	name: Events.InteractionCreate,
@@ -25,6 +25,8 @@ export default {
 			if (interaction.customId === 'puzzle_select') {
 				interactionHandle(interaction as AnySelectMenuInteraction);
 			}
+		} else if(interaction.isAutocomplete()){
+			autocompleteHandler(interaction as AutocompleteInteraction);
 		}
 	},
 };

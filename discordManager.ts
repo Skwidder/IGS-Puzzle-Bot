@@ -1,8 +1,10 @@
-import { ActionRowBuilder, ComponentBuilder, InteractionResponse,  MessageFlags,  StringSelectMenuBuilder,  StringSelectMenuComponent,  TextChannel,  type ActionRowComponent,  type AnyComponentBuilder,  type GuildBasedChannel,  type Message, type MessageActionRowComponentBuilder, type RepliableInteraction, type User } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ComponentBuilder, InteractionResponse,  MessageFlags,  StringSelectMenuBuilder,  StringSelectMenuComponent,  TextChannel,  type ActionRowComponent,  type AnyComponentBuilder,  type AutocompleteFocusedOption,  type GuildBasedChannel,  type Message, type MessageActionRowComponentBuilder, type RepliableInteraction, type User } from "discord.js";
 import type { EmbedPackage } from "./MessageBuilder";
 import { getServer, type ActivePuzzle, type ServerConfig } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { channel } from "node:diagnostics_channel";
+import type { PuzzleProvider } from "./providers/PuzzleProvider";
+import type { Providers } from "./providers/ProviderRegistry";
 
 export async function sendUserDM(user: User, text: string = "", embedPackage?: EmbedPackage): Promise<null | Message> {
     try {
@@ -86,5 +88,44 @@ export async function sendChannelMessage(client: IGSBot, channelId: string, text
     } catch (error){
         console.log((error as Error).message);
         return null;
+    }
+}
+
+export async function autocompleteHandler(interaction: AutocompleteInteraction){
+   if(!interaction.isAutocomplete()) return;
+   if(interaction.commandName !== 'collection') return;
+   
+   const focusedOption: AutocompleteFocusedOption = interaction.options.getFocused(true);
+   const client: IGSBot = interaction.client as IGSBot;
+
+    if(focusedOption.name === 'website'){
+        //send out all websites we have
+        
+        const websites = client.providerRegistry.getAllNames();
+
+        interaction.respond(websites.slice(0,25)).catch(() => {});
+    } else if (focusedOption.name === 'search') {
+        const website = interaction.options.getString('website');
+        if(!website) {
+            interaction.respond([{value: "1", name: "Please select a website first!"}]);
+            return;
+        }
+
+        const provider = client.providerRegistry.get(website as Providers);
+
+        if (!provider) {
+            return interaction.respond([
+                { name: `Website: ${website} not found, Please select one from the list`, value: "none" }
+            ]);
+        }
+        console.log(website);
+        const results = provider.collectionAutocomplete(focusedOption);
+        if (!results) {
+            return interaction.respond([
+                { name: "Something went wrong", value: "none" }
+            ]);
+        }
+
+        interaction.respond(results.slice(0,25)).catch(() => {});        
     }
 }
