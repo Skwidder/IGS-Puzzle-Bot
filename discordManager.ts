@@ -93,18 +93,21 @@ export async function sendChannelMessage(client: IGSBot, channelId: string, text
 
 export async function autocompleteHandler(interaction: AutocompleteInteraction){
    if(!interaction.isAutocomplete()) return;
-   if(interaction.commandName !== 'collection') return;
+   if(interaction.commandName !== 'collection' && interaction.commandName !== 'puzzle') return;
    
    const focusedOption: AutocompleteFocusedOption = interaction.options.getFocused(true);
    const client: IGSBot = interaction.client as IGSBot;
 
     if(focusedOption.name === 'website'){
         //send out all websites we have
-        
         const websites = client.providerRegistry.getAllNames();
-
         interaction.respond(websites.slice(0,25)).catch(() => {});
-    } else if (focusedOption.name === 'search') {
+    } 
+    
+    
+
+    if (focusedOption.name === 'search') {
+
         const website = interaction.options.getString('website');
         if(!website) {
             interaction.respond([{value: "1", name: "Please select a website first!"}]);
@@ -119,7 +122,14 @@ export async function autocompleteHandler(interaction: AutocompleteInteraction){
             ]);
         }
         console.log(website);
-        const results = provider.collectionAutocomplete(focusedOption);
+
+        let results: {name: string, value: string}[] | null = []
+        if(interaction.commandName === 'collection'){
+            results = provider.collectionAutocomplete(focusedOption);
+        } else if (interaction.commandName === 'puzzle'){
+            results = provider.puzzleAutocomplete(focusedOption);
+        }
+        
         if (!results) {
             return interaction.respond([
                 { name: "Something went wrong", value: "none" }

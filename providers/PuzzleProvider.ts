@@ -29,4 +29,6 @@ export abstract class PuzzleProvider {
     abstract getCollectionByID(collectionId: string): Promise<CollectionSource | null>;
 
     abstract collectionAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null;
+    
+    abstract puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null;
 }

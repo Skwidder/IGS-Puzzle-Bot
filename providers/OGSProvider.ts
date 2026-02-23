@@ -211,4 +211,8 @@ export class OGSProvider extends PuzzleProvider{
     collectionAutocomplete(focusedOption: AutocompleteFocusedOption): {name: string, value: string}[] | null {
         return [{name: "test", value: "1"}];
     }
+    
+    puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): { name: string; value: string; }[] | null {
+        return [{name: "test", value: "2"}];
+    }
 }
