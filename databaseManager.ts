@@ -330,6 +330,35 @@ export async function setActivePuzzle(client: IGSBot, guildId: string, puzzle: A
   );
 }
 
+export async function addPuzzleToQueue(client: IGSBot, guildId: string, puzzle: PuzzleQueueItem, postion?: number){
+  const results = await client.serverCol.updateOne({
+    "serverId": guildId,
+  },{
+    $push: {
+      puzzle_queue: {
+        "source": puzzle.source,
+        "puzzleId": puzzle.puzzleId,
+        $position: postion ?? -1
+      }
+    }
+  });
+  return results.modifiedCount > 0;
+}
+
+export async function removePuzzleFromQueue(client: IGSBot, guildId: string, puzzle: PuzzleQueueItem): Promise<boolean>{
+  const results = await client.serverCol.updateOne({
+    "serverId": guildId,
+  },{
+    $pull : {
+      puzzle_queue: {
+        "source": puzzle.source,
+        "puzzleId": puzzle.puzzleId
+      }
+    }
+  });
+  return results.modifiedCount > 0;
+}
+
 export async function setSchedule(client: IGSBot, guildId: string, scheduleExpression: string, channelId: string, role?: string) {
   await client.serverCol.updateOne({
     "serverId": guildId

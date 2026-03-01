@@ -1,5 +1,5 @@
 import { EmbedBuilder, type Channel, type ChatInputCommandInteraction, type GuildBasedChannel, type GuildChannelResolvable, type Interaction, type RepliableInteraction, type Role, type StageInstance } from "discord.js";
-import { clearSchedule, getScores, getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, setSchedule, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
+import { addPuzzleToQueue, clearSchedule, getScores, getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, setSchedule, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
 import { type ServerConfig, type UserDocument } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { PuzzleProvider } from "./providers/PuzzleProvider";
@@ -10,6 +10,7 @@ import { embedMaker, embedPackager, infoToEmbedFields } from "./MessageBuilder";
 import { getSimulatedBoard } from "./Simulator";
 import type { Position } from "wgo";
 import { GoBoardImageBuilder } from "./ImageBuilder";
+import type { Providers } from "./providers/ProviderRegistry";
 
 //Discriminated Union
 export type NextPuzzleResult = 
@@ -228,4 +229,20 @@ export async function showLeaderBoard(interaction: ChatInputCommandInteraction,n
     )
 
     interaction.editReply({ embeds: [embed] });
+}
+
+export async function addPuzzle(
+  client: IGSBot, 
+  guildId: string, 
+  provider: Providers, 
+  puzzleId: string | number,
+  postion?: number): Promise<boolean>{
+
+  //Check to make sure puzzle is valid by getting what would be an active puzzle
+  const puzzleProvider = client.providerRegistry.get(provider);
+  const puzzle = await puzzleProvider.fetchPuzzle(puzzleId);
+  
+  if(!puzzle) return false;
+
+  return await addPuzzleToQueue(client, guildId, {source: provider, puzzleId: puzzleId}, postion ?? -1);
 }

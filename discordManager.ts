@@ -76,7 +76,7 @@ export async function sendChannelMessage(client: IGSBot, channelId: string, text
 
     // const channel: GuildBasedChannel | null = await guild.channels.fetch(channelId);
     const channel = await client.channels.fetch(channelId);
-    if ((!channel || !channel?.isTextBased())  && channel?.isDMBased()) return null;
+if ((!channel || !channel?.isTextBased())  && channel?.isDMBased()) return null;
 
     let textChannel: TextChannel = channel as TextChannel;
 
@@ -93,49 +93,87 @@ export async function sendChannelMessage(client: IGSBot, channelId: string, text
 
 export async function autocompleteHandler(interaction: AutocompleteInteraction){
    if(!interaction.isAutocomplete()) return;
-   if(interaction.commandName !== 'collection' && interaction.commandName !== 'puzzle') return;
-   
-   const focusedOption: AutocompleteFocusedOption = interaction.options.getFocused(true);
-   const client: IGSBot = interaction.client as IGSBot;
+
+    let subcommand = interaction.options.getSubcommand();
+    let results: {name: string, value: string}[] | null = null;
+
+    if(subcommand === 'add'){
+        results = await addAutoCompleteHandeler(interaction);
+    } else if(subcommand === 'remove') {
+
+    }
+
+    if (!results) {
+        return interaction.respond([
+            { name: "Something went wrong", value: "none" }
+        ]);
+    }   
+    interaction.respond(results.slice(0,25)).catch(() => {});
+}
+
+
+async function addAutoCompleteHandeler(interaction: AutocompleteInteraction): Promise<{name: string, value: string}[] | null> {
+    if(interaction.commandName !== 'collection' && interaction.commandName !== 'puzzle') return null;
+
+    const focusedOption: AutocompleteFocusedOption = interaction.options.getFocused(true);
+    const client: IGSBot = interaction.client as IGSBot;
 
     if(focusedOption.name === 'website'){
         //send out all websites we have
-        const websites = client.providerRegistry.getAllNames();
-        interaction.respond(websites.slice(0,25)).catch(() => {});
+        return client.providerRegistry.getAllNames();
     } 
-    
-    
 
     if (focusedOption.name === 'search') {
-
         const website = interaction.options.getString('website');
         if(!website) {
-            interaction.respond([{value: "1", name: "Please select a website first!"}]);
-            return;
+            return [{value: "1", name: "Please select a website first!"}];
         }
 
         const provider = client.providerRegistry.get(website as Providers);
-
         if (!provider) {
-            return interaction.respond([
+            return [
                 { name: `Website: ${website} not found, Please select one from the list`, value: "none" }
-            ]);
+            ];
         }
-        console.log(website);
 
-        let results: {name: string, value: string}[] | null = []
         if(interaction.commandName === 'collection'){
-            results = await provider.collectionAutocomplete(focusedOption);
+            return await provider.collectionAutocomplete(focusedOption);
         } else if (interaction.commandName === 'puzzle'){
-            results = await provider.puzzleAutocomplete(focusedOption);
+            //TODO: add puzzle autocomplete
+            // results = await provider.puzzleAutocomplete(focusedOption);
         }
-        
-        if (!results) {
-            return interaction.respond([
-                { name: "Something went wrong", value: "none" }
-            ]);
-        }
-
-        interaction.respond(results.slice(0,25)).catch(() => {});        
     }
+    return null;
 }
+
+async function removeAutoCompleteHandler(interaction: AutocompleteInteraction): Promise<{name: string, value: string}[] | null> {
+    // if(interaction.commandName !== 'collection' && interaction.commandName !== 'puzzle') return null;
+    const focusedOption: AutocompleteFocusedOption = interaction.options.getFocused(true);
+    const client: IGSBot = interaction.client as IGSBot;
+    if(focusedOption.name !== 'remove') return null;
+
+    if(!interaction.guildId) return null;
+    const server = await getServer(client, interaction.guildId);
+    if(!server) return null;
+    
+    if(interaction.commandName === "collection"){
+        return server.collection_sources.map(collection => {
+            const provider = client.providerRegistry.get(collection.source);
+            return {
+                name: `${provider.name}: ${collection.name}`,
+                value: collection.name
+            }
+        });
+    } else if(interaction.commandName === "puzzle"){
+        return server.puzzle_queue.map(puzzle => {
+            const provider = client.providerRegistry.get(puzzle.source);
+            return {
+                name: `${provider.name}: ${puzzle.puzzleId}`,
+                //make like a little baby JSON
+                value: `{${puzzle.source}|${puzzle.puzzleId}}`
+            }
+        });
+    }
+    return null;
+}
+

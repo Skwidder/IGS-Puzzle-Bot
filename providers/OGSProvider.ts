@@ -16,24 +16,29 @@ export class OGSProvider extends PuzzleProvider{
     }
     
     async fetchPuzzle(puzzleId: string | number): Promise<ActivePuzzle | null> {
-        const response = await axios.get(`${this.baseURL}/${puzzleId}`);
-        if (response.status != 200) return null;
-        const data = response.data;
+        try {
+            const response = await axios.get(`${this.baseURL}/${puzzleId}`);
+            if (response.status != 200) return null;
+            const data = response.data;
 
-        let puzzle: ActivePuzzle = {
-            source: Providers.OGS,
-            puzzleId: puzzleId,
-            tree: data.puzzle.move_tree,
-            size: data.puzzle.width,
-            initialPlayer: data.puzzle.inital_player,
-            whiteStonesInitial: data.puzzle.initial_state.white,
-            blackStonesInitial: data.puzzle.initial_state.black,
-            author: data.owner.username,
-            description: data.puzzle.puzzle_description,
-            collectionName: data.collection.name,
+            let puzzle: ActivePuzzle = {
+                source: Providers.OGS,
+                puzzleId: puzzleId,
+                tree: data.puzzle.move_tree,
+                size: data.puzzle.width,
+                initialPlayer: data.puzzle.inital_player,
+                whiteStonesInitial: data.puzzle.initial_state.white,
+                blackStonesInitial: data.puzzle.initial_state.black,
+                author: data.owner.username,
+                description: data.puzzle.puzzle_description,
+                collectionName: data.collection.name,
+                
+            }
+
+            return puzzle;
+        } catch (error) {
+            return null;
         }
-        
-        return puzzle;
     }
 
     async discoverPuzzles(collectionSource: CollectionSource): Promise<number[] | string[] | null> {
@@ -209,24 +214,27 @@ export class OGSProvider extends PuzzleProvider{
     }
     
 
-    async searchCollection(searchString: string): Promise<CollectionSource | "NO_COLLECTION_FOUND" | "COLLECTION_PRIVATE"> {
+    async searchCollection(searchString: string): Promise<CollectionSource |
+     "NO_COLLECTION_FOUND" | 
+     "COLLECTION_PRIVATE" |
+     "TOO_MANY_COLLECTIONS" |
+     "ERROR">{
+        let response: axios.AxiosResponse | undefined = undefined
         try{
             const name = encodeURIComponent(searchString);
-            const response = await axios.get("https://online-go.com/api/v1/puzzles/collections?name=" + name);
+            response = await axios.get("https://online-go.com/api/v1/puzzles/collections?name=" + name);
         }catch(error){
             // await interaction.reply("Error getting collection, collection may be private");
-            return;
+            return "ERROR";
         }
-
+        if(!response) return "ERROR"
         if (response.data.count == 0){
             // await interaction.reply("Error Finding Collection, Please Check the Name!");
-            return;
+            return "NO_COLLECTION_FOUND";
         }
-
         if (response.data.count > 1){
-            await interaction.reply("More than 1 collection found! Please verify name");
+            return "TOO_MANY_COLLECTIONS";
         }
-
         return response.data.results[0].id;
     }
     
@@ -246,7 +254,7 @@ export class OGSProvider extends PuzzleProvider{
         return options;
     }
     
-    puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{ name: string, value: string}[] | null> {
-        return [{name: "test", value: "2"}];
-    }
+    // puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{ name: string, value: string}[] | null> {
+    //     return [{name: "test", value: "2"}];
+    // }
 }
