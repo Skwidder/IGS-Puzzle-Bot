@@ -121,11 +121,8 @@ export class OGSProvider extends PuzzleProvider{
     //Iterate though the move tree untill out of moves
     private getToMoveBranch(puzzle: ActivePuzzle, moves: string[]): any {
         let moveTree = puzzle.tree;
-
-        console.log(moves);
         
         for (let move of moves){
-            console.log(move);
             const coord: {x: number, y: number} | null = sgfToCoords(move);
             if(!coord) throw Error(`OGS: sgfToCoords erorr: ${move}`);
             moveTree = this.getMoveBranch(coord, moveTree);
