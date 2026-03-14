@@ -121,8 +121,11 @@ export class OGSProvider extends PuzzleProvider{
     //Iterate though the move tree untill out of moves
     private getToMoveBranch(puzzle: ActivePuzzle, moves: string[]): any {
         let moveTree = puzzle.tree;
+
+        console.log(moves);
         
-        for (let move in moves){
+        for (let move of moves){
+            console.log(move);
             const coord: {x: number, y: number} | null = sgfToCoords(move);
             if(!coord) throw Error(`OGS: sgfToCoords erorr: ${move}`);
             moveTree = this.getMoveBranch(coord, moveTree);
@@ -224,18 +227,24 @@ export class OGSProvider extends PuzzleProvider{
             const name = encodeURIComponent(searchString);
             response = await axios.get("https://online-go.com/api/v1/puzzles/collections?name=" + name);
         }catch(error){
-            // await interaction.reply("Error getting collection, collection may be private");
             return "ERROR";
         }
         if(!response) return "ERROR"
         if (response.data.count == 0){
-            // await interaction.reply("Error Finding Collection, Please Check the Name!");
             return "NO_COLLECTION_FOUND";
         }
         if (response.data.count > 1){
             return "TOO_MANY_COLLECTIONS";
         }
-        return response.data.results[0].id;
+
+        const result = response.data.results[1]
+
+        return {
+            name: result.name,
+            payload: result.id,
+            source: Providers.OGS,
+            type: "COLLECTION"
+        }
     }
     
 

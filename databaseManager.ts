@@ -1,6 +1,6 @@
 import { Client } from 'discord.js';
 import { IGSBot } from './IGSBot';
-import type { Providers } from './providers/ProviderRegistry';
+import { Providers } from './providers/ProviderRegistry';
 import type { InsertOneResult } from 'mongodb';
 
 export interface UserServerState {
@@ -353,6 +353,36 @@ export async function removePuzzleFromQueue(client: IGSBot, guildId: string, puz
       puzzle_queue: {
         "source": puzzle.source,
         "puzzleId": puzzle.puzzleId
+      }
+    }
+  });
+  return results.modifiedCount > 0;
+}
+
+export async function addCollection(client: IGSBot, guildId: string, collection: CollectionSource) {
+  const results = await client.serverCol.updateOne({
+    "serverId": guildId,
+  },{
+    $push: {
+      collection_sources: {
+        "name": collection.name,
+        "payload": collection.payload,
+        "source": collection.source,
+        "type": collection.type
+      }
+    }
+  });
+  return results.modifiedCount > 0;
+}
+
+export async function removeCollection(client: IGSBot, guildId: string, provider: Providers, name: string){
+  const results = await client.serverCol.updateOne({
+    "serverId": guildId,
+  },{
+    $pull : {
+      collection_sources: {
+        "source": provider,
+        "name": name
       }
     }
   });

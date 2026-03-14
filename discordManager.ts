@@ -161,7 +161,7 @@ async function removeAutoCompleteHandler(interaction: AutocompleteInteraction): 
             const provider = client.providerRegistry.get(collection.source);
             return {
                 name: `${provider.name}: ${collection.name}`,
-                value: collection.name
+                value: `${provider.name}|${collection.name}`
             }
         });
     } else if(interaction.commandName === "puzzle"){

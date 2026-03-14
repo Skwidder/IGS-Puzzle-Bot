@@ -84,12 +84,12 @@ async function execute(interaction: ChatInputCommandInteraction){
             
             const removeResults = await removePuzzleFromQueue(client, interaction.guildId, item);
             if(!removeResults) interactionReply(interaction, "Remove fail, if issues presists make a bug report");
-            interactionReply(interaction,`${sourceStr}: ${puzzleId} removed!`);
+            interactionReply(interaction,`${source}: ${puzzleId} removed!`);
             break;
         case "add":
             const website = interaction.options.getString("website");
             const addSource = Object.values(Providers).find(p => p === website);
-            if(!source) return interactionReply(interaction, "Website Invalid");
+            if(!addSource) return interactionReply(interaction, "Website Invalid");
             const toAdd = interaction.options.getString("id");
             if(!website || !toAdd) return interactionReply(interaction, "Input not valid");
 
