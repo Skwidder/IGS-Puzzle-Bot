@@ -76,7 +76,7 @@ async function migrateServer() {
 }
 
 
-async function playerMigration(){
+async function migratePlayer(){
     if(DRY_RUN) return;
     const client = new MongoClient(Bun.env.DBCONNSTRING || "");
     try {
@@ -104,24 +104,5 @@ async function playerMigration(){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 migrateServer().catch(console.error);
+migratePlayer().catch(console.error);
