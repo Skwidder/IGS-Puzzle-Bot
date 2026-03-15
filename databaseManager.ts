@@ -213,10 +213,11 @@ export async function setUserActiveServer(client: IGSBot, userId: string, active
   const response = await client.usersCol.updateOne(
     {
       "userId": userId,
-      "guilds.id": activeServerId
+      "guilds.guildId": activeServerId
     },
     {
       $set: {
+        "guilds.$.in_progress": 1,
         "guilds.$.active": 1
       }
     }
@@ -224,7 +225,7 @@ export async function setUserActiveServer(client: IGSBot, userId: string, active
 
   if(response.matchedCount === 0){
     //Add server to the user
-    client.usersCol.updateOne(
+    await client.usersCol.updateOne(
       { 
           userId: userId,
       },
@@ -336,9 +337,11 @@ export async function addPuzzleToQueue(client: IGSBot, guildId: string, puzzle: 
   },{
     $push: {
       puzzle_queue: {
-        "source": puzzle.source,
-        "puzzleId": puzzle.puzzleId,
-        $position: postion ?? -1
+        $each: [{
+          "source": puzzle.source,
+          "puzzleId": puzzle.puzzleId
+        }],
+        $position: postion ?? undefined
       }
     }
   });

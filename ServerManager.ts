@@ -244,5 +244,5 @@ export async function addPuzzle(
   
   if(!puzzle) return false;
 
-  return await addPuzzleToQueue(client, guildId, {source: provider, puzzleId: puzzleId}, postion ?? -1);
+  return await addPuzzleToQueue(client, guildId, {source: provider, puzzleId: puzzleId}, postion ?? undefined);
 }

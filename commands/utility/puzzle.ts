@@ -99,7 +99,7 @@ async function execute(interaction: ChatInputCommandInteraction){
                 position = 1
             }
 
-            const addResults = addPuzzle(client, interaction.guildId, source, toAdd, position);
+            const addResults = addPuzzle(client, interaction.guildId, addSource, toAdd, position);
             if(!addResults) interactionReply(interaction, "add fail, verify input");
             interactionReply(interaction, `${website}: ${toAdd} added!`);
             break;
