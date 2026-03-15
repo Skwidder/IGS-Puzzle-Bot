@@ -14,7 +14,8 @@ export interface MoveResponse{
 export abstract class PuzzleProvider {
     abstract readonly name: string;
     abstract readonly slug: Providers;
-    abstract readonly baseURL: string;
+    abstract readonly apiBaseURL: string;
+    abstract readonly playBaseURL: string;
 
     abstract fetchPuzzle(puzzleId: string | number): Promise<ActivePuzzle | null>;
 

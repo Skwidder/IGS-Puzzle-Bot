@@ -31,7 +31,7 @@ export function infoToEmbedFields(client: IGSBot, puzzle: ActivePuzzle, response
 
     let sourceText = ""
     if(response?.isCorrect){
-        sourceText = `[${provider.name}](${provider.baseURL}/${puzzle.puzzleId}): ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;
+        sourceText = `[${provider.name}](${provider.playBaseURL}/${puzzle.puzzleId}): ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;
         notes = notes + ":white_check_mark: Correct! \n";
     } else{
         sourceText = `${provider.name}: ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;

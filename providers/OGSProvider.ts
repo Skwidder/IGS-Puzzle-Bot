@@ -9,7 +9,8 @@ import { request } from "node:http";
 export class OGSProvider extends PuzzleProvider{
     readonly name = "Online Go Server";
     readonly slug = Providers.OGS;
-    readonly baseURL = "https://online-go.com/api/v1/puzzles"
+    readonly apiBaseURL = "https://online-go.com/api/v1/puzzles";
+    readonly playBaseURL = "https://online-go.com/puzzle/";
     
     constructor() {
         super();
@@ -17,7 +18,7 @@ export class OGSProvider extends PuzzleProvider{
     
     async fetchPuzzle(puzzleId: string | number): Promise<ActivePuzzle | null> {
         try {
-            const response = await axios.get(`${this.baseURL}/${puzzleId}`);
+            const response = await axios.get(`${this.apiBaseURL}/${puzzleId}`);
             if (response.status != 200) return null;
             const data = response.data;
 
@@ -51,7 +52,7 @@ export class OGSProvider extends PuzzleProvider{
         let response;
 
         do{
-            response = await axios.get(`${this.baseURL}?collection=${collectionSource.payload}&page_size=50&page=${i}`);
+            response = await axios.get(`${this.apiBaseURL}?collection=${collectionSource.payload}&page_size=50&page=${i}`);
 
             if(response.status != 200) return null;
             puzzles.push(... response.data.results.map((item: any) => item.id));
@@ -253,7 +254,7 @@ export class OGSProvider extends PuzzleProvider{
         const name = encodeURI(focusedOption.value);
         
         //grab results that contain the current focus value
-        const response = await axios.get(`${this.baseURL}collections?page_size=25&name__icontains=${name}`);
+        const response = await axios.get(`${this.apiBaseURL}collections?page_size=25&name__icontains=${name}`);
         if(!response || response.status !== 200) return null;
         const options = response.data.results.map(collection => {
             return {
