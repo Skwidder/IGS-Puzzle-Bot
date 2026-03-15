@@ -300,7 +300,6 @@ export class GoBoardImageBuilder {
                 console.log(`Mark Wrong Length: ${mark}`);
                 continue;
             }
-            console.log(mark);
 
             //hardcode substring for now might cause issues later
             const coord = sgfToCoords(mark.substring(3,5));
@@ -312,7 +311,6 @@ export class GoBoardImageBuilder {
                markCharacter = mark.charAt(6);
             }
 
-            console.log(markCharacter);
             this.marks.push({
                 x: coord?.x, 
                 y: coord?.y, 
