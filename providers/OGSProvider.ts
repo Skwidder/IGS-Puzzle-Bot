@@ -26,7 +26,7 @@ export class OGSProvider extends PuzzleProvider{
                 puzzleId: puzzleId,
                 tree: data.puzzle.move_tree,
                 size: data.puzzle.width,
-                initialPlayer: data.puzzle.inital_player,
+                initialPlayer: data.puzzle.initial_player,
                 whiteStonesInitial: data.puzzle.initial_state.white.match(/.{2}/g),
                 blackStonesInitial: data.puzzle.initial_state.black.match(/.{2}/g),
                 author: data.owner.username,
@@ -66,7 +66,7 @@ export class OGSProvider extends PuzzleProvider{
         let moveTree = puzzle.tree;
         
         //Add on players new move
-        let moves: string[] = [...pastMoves];
+        let moves: string[] = pastMoves ?? [];
         moves.push(newMove);
 
         if(!puzzle.initialPlayer) throw Error("OGS: Puzzle initial player is null");
@@ -144,7 +144,7 @@ export class OGSProvider extends PuzzleProvider{
     }
 
     private checkIfSequanceEnd(moveTree: any, responseMove?: string): MoveResponse | null{
-        const marks: string[] = this.convertMarks(moveTree);
+        const marks: string[] = this.convertMarks(moveTree.marks);
 
         if (!moveTree.branches || moveTree.branches.length == 0){
             if(moveTree.correct_answer) {
