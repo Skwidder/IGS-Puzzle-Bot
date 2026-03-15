@@ -117,7 +117,7 @@ export class OGSProvider extends PuzzleProvider{
 
     async getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined> {
         const branch = this.getToMoveBranch(puzzle, moves);
-        const marks: string[] = this.convertMarks(branch.marks);
+        const marks: string[] = this.convertMarks(branch?.marks ?? []);
         return marks;
     }
     
@@ -183,8 +183,6 @@ export class OGSProvider extends PuzzleProvider{
 
     private convertMarks(OGSMarks: any): string[] {
         if(!OGSMarks) return [];
-
-        console.log(OGSMarks);
 
         let marks: string[] = [];
         for (const mark of OGSMarks) {

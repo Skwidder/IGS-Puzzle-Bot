@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, Client, Message, User, type AnySelectMenuInteraction, type APIEmbedField, type Interaction, type RepliableInteraction } from "discord.js"
-import { createDBUser, getServer, getUser, removeLastMove, resetUserActiveServers, 
+import { addUserMove, createDBUser, getServer, getUser, removeLastMove, resetUserActiveServers, 
     resetUserMoves, setActivePuzzle, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { GoBoardImageBuilder } from "./ImageBuilder";
@@ -75,8 +75,10 @@ export async function userMessageHandle(message: Message){
 
             //Check if last move in active moves is from the Response
             //If it is we need to remove 2 Moves
-            if(activeServer.active_moves[-1].charAt(0) === responseColor){
-                await removeLastMove(client, player.userId);
+            if(activeServer.active_moves.length > 1){
+                if(activeServer.active_moves[(activeServer.active_moves.length - 1)].charAt(0) === responseColor){
+                    await removeLastMove(client, player.userId);
+                }
             }
             
             await removeLastMove(client, player.userId);
@@ -205,6 +207,11 @@ async function renderAndSendBoard(
         await sendUserDM(user, "Invalid Move, please provide a valid move");
         return;
     }
+
+    //We now know its a okay move
+    //TODO: find a way to move this
+    if(newMoveSGF) addUserMove(client, user.id, newMoveSGF);
+    if(response?.responseMove) addUserMove(client, user.id, response.responseMove);
 
     // Build Image and Grid
     const builder = new GoBoardImageBuilder(board.size);

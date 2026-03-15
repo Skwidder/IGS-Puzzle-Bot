@@ -294,7 +294,7 @@ export class GoBoardImageBuilder {
      * @param marks SGF Version of Marks
      */
     public addSGFMarks(marks: string[]) {
-        for (const mark in marks){
+        for (const mark of marks){
             if(mark.length != 5 && mark.length != 6) {
                 //i want to know if this happens
                 console.log(`Mark Wrong Length: ${mark}`);
@@ -314,7 +314,7 @@ export class GoBoardImageBuilder {
             this.marks.push({
                 x: coord?.x, 
                 y: coord?.y, 
-                markType: mark.substring(0,3),
+                markType: mark.substring(0,2),
                 char: markCharacter,
             });
         }
