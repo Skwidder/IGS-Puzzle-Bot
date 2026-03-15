@@ -27,8 +27,8 @@ export class OGSProvider extends PuzzleProvider{
                 tree: data.puzzle.move_tree,
                 size: data.puzzle.width,
                 initialPlayer: data.puzzle.inital_player,
-                whiteStonesInitial: data.puzzle.initial_state.white,
-                blackStonesInitial: data.puzzle.initial_state.black,
+                whiteStonesInitial: data.puzzle.initial_state.white.match(/.{2}/g),
+                blackStonesInitial: data.puzzle.initial_state.black.match(/.{2}/g),
                 author: data.owner.username,
                 description: data.puzzle.puzzle_description,
                 collectionName: data.collection.name,
@@ -99,7 +99,7 @@ export class OGSProvider extends PuzzleProvider{
         endCheck = this.checkIfSequanceEnd(moveTree)
         if(endCheck) return endCheck; 
 
-        const marks: string[] | undefined = await this.getMarks(moveTree,moves);
+        const marks: string[] | undefined = await this.getMarks(puzzle,moves);
 
         //if we havent left yet then its just a response not a end
         return {
@@ -114,7 +114,7 @@ export class OGSProvider extends PuzzleProvider{
 
     async getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined> {
         const branch = this.getToMoveBranch(puzzle, moves);
-        const marks: string[] = this.convertMarks(branch);
+        const marks: string[] = this.convertMarks(branch.marks);
         return marks;
     }
     
@@ -179,6 +179,10 @@ export class OGSProvider extends PuzzleProvider{
     }
 
     private convertMarks(OGSMarks: any): string[] {
+        if(!OGSMarks) return [];
+
+        console.log(OGSMarks);
+
         let marks: string[] = [];
         for (const mark of OGSMarks) {
             const SGFCoord: string = coordsToSGF({x: mark.x, y: mark.y}); 

@@ -71,8 +71,12 @@ export class GoBoardImageBuilder {
 
     public async deletePNG(){
         fs.unlink(this.pngPath, (err) => {
-            if (err) throw err;
-            console.log('path/file.txt was deleted');
+            if (err) {
+                fs.unlink(this.pngPath, (err) => {
+                    if (err) throw err;
+                    console.log('File deleted on second try');
+                });
+            }
         });
     }
 
@@ -80,7 +84,7 @@ export class GoBoardImageBuilder {
     private generateSVG(padding = 1): string {
 
         const box = this.calculateBoundingBox(padding);
-        if (!box) throw Error("Bounding box not caculated");
+        if (!box) throw Error("Bounding box not calculated");
 
         const fullWidth = this.size == box.maxX - box.minX + 1
         const fullHeight = this.size == box.maxY - box.minY + 1
@@ -317,6 +321,7 @@ export class GoBoardImageBuilder {
     }
     
     public addWgoGridStones(grid: Color[] = []) {
+
         const size = Math.sqrt(grid.length)
         if (!Number.isInteger(size)) {
             console.log("Grid Must be square");

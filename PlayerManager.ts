@@ -175,7 +175,7 @@ export async function playerPlay(interaction: ChatInputCommandInteraction){
         showHelp: true,
     }
 
-    renderAndSendBoard(client, interaction.user, puzzle, activeServer.active_moves, renderOptions);
+    renderAndSendBoard(client, interaction.user, puzzle, activeServer.active_moves ?? [], renderOptions);
 }
 
 interface RenderBoardOptions {
@@ -231,7 +231,7 @@ async function renderAndSendBoard(
 
     // Save Image
     const pngPath = `${user.id}.png`;
-    builder.saveAsPNG(pngPath);
+    await builder.saveAsPNG(pngPath);
 
     // Build and send the embed message
     const isCorrect = response?.isCorrect ?? false;

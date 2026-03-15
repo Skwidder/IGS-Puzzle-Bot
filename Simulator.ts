@@ -13,14 +13,14 @@ export async function getSimulatedBoard(
     //Wgo handles x y coords backwards so we swap them when we place the stone
     const game = new wgo.Game(puzzle.size)
     
-    for (const move in puzzle.whiteStonesInitial){
+    for (const move of puzzle.whiteStonesInitial){
         const coord = sgfToCoords(move);
 
         if(!coord) continue;
         game.addStone(coord.y, coord.x, wgo.Color.WHITE);
     }
     
-    for (const move in puzzle.blackStonesInitial) {
+    for (const move of puzzle.blackStonesInitial) {
         const coord = sgfToCoords(move);
         
         if(!coord) continue;
@@ -35,10 +35,11 @@ export async function getSimulatedBoard(
         game.pass();
     }
 
-    let state: false | wgo.Position = false;
+    let state: false | wgo.Position = game.position;
 
     //add past moves
     for (let move of pastMoves) {
+        console.log(`move: ${move}`);
         const coord = sgfToCoords(move);
         if(!coord) continue;
 
@@ -74,19 +75,19 @@ export async function getSimulatedBoard(
 
 
 //for testing
-/* function printBoard(array) {
-    if (array.length !== 361) {
-        console.log("Array must be exactly 361 elements");
-        return;
-    }
+// function printBoard(array: any) {
+//     if (array.length !== 361) {
+//         console.log("Array must be exactly 361 elements");
+//         return;
+//     }
 
-    for (let row = 0; row < 19; row++) {
-        let line = '';
-        for (let col = 0; col < 19; col++) {
-            const index = row * 19 + col;
-            // Pad each number to be 2 characters wide (including space)
-            line += (array[index] >= 0 ? ' ' : '') + array[index] + ' ';
-        }
-        console.log(line.trim());
-    }
-} */
+//     for (let row = 0; row < 19; row++) {
+//         let line = '';
+//         for (let col = 0; col < 19; col++) {
+//             const index = row * 19 + col;
+//             // Pad each number to be 2 characters wide (including space)
+//             line += (array[index] >= 0 ? ' ' : '') + array[index] + ' ';
+//         }
+//         console.log(line.trim());
+//     }
+// }
