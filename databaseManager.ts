@@ -57,23 +57,17 @@ export interface CollectionSource {
 }
 
 export async function ensureAllServersExist(client: IGSBot) {
-  const serversCollection = client.serverCol;
 
   // Get the list of guilds and loop through each checking if they exist
   const guilds = client.guilds.cache//.each((guild) => {
 
   for (const [, guild] of guilds) {
-    const existingServer = await serversCollection.findOne({ serverId: guild.id });
+    const existingServer = await getServer(client, guild.id);
 
     if (!existingServer) {
       console.log(`Server ${guild.id} does not exist. Creating...`);
 
-      await serversCollection.insertOne({
-        'serverId': guild.id,
-        'name': guild.name,
-        'puzzle_queue': [],
-        'collection_sources': [],
-      });
+      createDBServer(client,guild.id,guild.name)
     }
   }
 }
