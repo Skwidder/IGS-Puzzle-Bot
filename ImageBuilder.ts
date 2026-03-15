@@ -295,11 +295,12 @@ export class GoBoardImageBuilder {
      */
     public addSGFMarks(marks: string[]) {
         for (const mark of marks){
-            if(mark.length != 5 && mark.length != 6) {
+            if(mark.length != 5 && mark.length != 6 && mark.length != 8) {
                 //i want to know if this happens
                 console.log(`Mark Wrong Length: ${mark}`);
                 continue;
             }
+            console.log(mark);
 
             //hardcode substring for now might cause issues later
             const coord = sgfToCoords(mark.substring(3,5));
@@ -307,10 +308,11 @@ export class GoBoardImageBuilder {
 
             let markCharacter: string | undefined = undefined;
 
-            if (mark.substring(0,3) === "LB"){
-               markCharacter = mark.substring(6);
+            if (mark.substring(0,2) === "LB"){
+               markCharacter = mark.charAt(6);
             }
 
+            console.log(markCharacter);
             this.marks.push({
                 x: coord?.x, 
                 y: coord?.y, 

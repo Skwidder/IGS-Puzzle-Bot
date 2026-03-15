@@ -189,6 +189,7 @@ export class OGSProvider extends PuzzleProvider{
             const SGFCoord: string = coordsToSGF({x: mark.x, y: mark.y}); 
             
             const markTypes = Object.keys(mark.marks);
+            console.log(markTypes);
 
             for (let markType of markTypes) {
                 let markSGF: string = "";
@@ -197,7 +198,7 @@ export class OGSProvider extends PuzzleProvider{
                         continue;
                         break;
                     case "letter":
-                        markSGF = `LB[${SGFCoord}:${mark.marks.markType}]`;
+                        markSGF = `LB[${SGFCoord}:${mark.marks[markType]}]`;
                         break;
                     case "cross":
                         markSGF = `MA[${SGFCoord}]`;
