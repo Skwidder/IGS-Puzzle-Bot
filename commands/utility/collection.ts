@@ -88,7 +88,6 @@ async function execute(interaction: ChatInputCommandInteraction){
             throw Error(`Collection subcommand not supported: ${interaction.options.getSubcommand()}`);
             break;
     }
-
 }
 
 export default { data, execute };

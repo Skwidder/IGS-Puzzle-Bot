@@ -100,7 +100,7 @@ export async function autocompleteHandler(interaction: AutocompleteInteraction){
     if(subcommand === 'add'){
         results = await addAutoCompleteHandeler(interaction);
     } else if(subcommand === 'remove') {
-
+        results = await removeAutoCompleteHandler(interaction);
     }
 
     if (!results) {
@@ -110,6 +110,7 @@ export async function autocompleteHandler(interaction: AutocompleteInteraction){
     }   
     interaction.respond(results.slice(0,25)).catch(() => {});
 }
+
 
 
 async function addAutoCompleteHandeler(interaction: AutocompleteInteraction): Promise<{name: string, value: string}[] | null> {
@@ -161,7 +162,7 @@ async function removeAutoCompleteHandler(interaction: AutocompleteInteraction): 
             const provider = client.providerRegistry.get(collection.source);
             return {
                 name: `${provider.name}: ${collection.name}`,
-                value: `${provider.name}|${collection.name}`
+                value: `${provider.slug}|${collection.name}`
             }
         });
     } else if(interaction.commandName === "puzzle"){
