@@ -81,7 +81,7 @@ export async function userMessageHandle(message: Message){
             
             await removeLastMove(client, player.userId);
         }else{
-            newMoveSGF = standardNotationToSGF(puzzle.initialPlayer, message.content.trim().slice(1,3), puzzle.size);
+            newMoveSGF = standardNotationToSGF(puzzle.initialPlayer, message.content.trim().substring(1), puzzle.size);
             if (!newMoveSGF){
                 sendUserDM(message.author, "Invalid Move, please provide a valid move");
                 return;

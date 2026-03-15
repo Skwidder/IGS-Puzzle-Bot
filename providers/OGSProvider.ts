@@ -105,7 +105,7 @@ export class OGSProvider extends PuzzleProvider{
         return {
             isSequanceEnd: false,
             isCorrect: false,
-            comments: moveTree.text.replace(/<(?!br\s*\/?)[^>]+>/g, '') ?? "",
+            comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, '') ?? "",
             responseMove: moveSGF,
             marks: marks,
         };
@@ -152,7 +152,7 @@ export class OGSProvider extends PuzzleProvider{
                     return {
                         isSequanceEnd: true,
                         isCorrect: true,
-                        comments: moveTree.text.replace(/<(?!br\s*\/?)[^>]+>/g, ''),
+                        comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, '') ?? "",
                         responseMove: responseMove,
                         marks: marks,
                     };
@@ -160,7 +160,7 @@ export class OGSProvider extends PuzzleProvider{
                     return {
                         isSequanceEnd: true,
                         isCorrect: false,
-                        comments: moveTree.text.replace(/<(?!br\s*\/?)[^>]+>/g, ''),
+                        comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, '') ?? "",
                         responseMove: responseMove,
                         marks: marks,
                     };
