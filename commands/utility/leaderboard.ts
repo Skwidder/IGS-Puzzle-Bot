@@ -23,3 +23,5 @@ async function execute(interaction: ChatInputCommandInteraction) {
     
     showLeaderBoard(interaction, num);
 };
+
+export default { data, execute};

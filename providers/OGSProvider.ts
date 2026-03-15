@@ -227,23 +227,19 @@ export class OGSProvider extends PuzzleProvider{
         let response: axios.AxiosResponse | undefined = undefined
         try{
             const name = encodeURIComponent(searchString);
-            response = await axios.get("https://online-go.com/api/v1/puzzles/collections?name=" + name);
+            //OGS colelction auto complete returns id of the collection so just use that to get the collection 
+            //without searching
+            response = await axios.get(`https://online-go.com/api/v1/puzzles/collections/${searchString}`);
         }catch(error){
             return "ERROR";
         }
-        if(!response) return "ERROR"
-        if (response.data.count == 0){
-            return "NO_COLLECTION_FOUND";
-        }
-        if (response.data.count > 1){
-            return "TOO_MANY_COLLECTIONS";
-        }
 
-        const result = response.data.results[1]
+        if(!response) return "ERROR";
+        if(response.status === 404) return "NO_COLLECTION_FOUND";
 
         return {
-            name: result.name,
-            payload: result.id,
+            name: response.data.name,
+            payload: searchString,
             source: Providers.OGS,
             type: "COLLECTION"
         }

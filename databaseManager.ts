@@ -303,7 +303,7 @@ export async function getInProgessPuzzles(client: IGSBot, userId: string): Promi
 }
 
 export async function getScores(client: IGSBot, guildId: string) {
-  const userArray = await client.serverCol.aggregate([
+  const userArray = await client.usersCol.aggregate([
     // Unwind the guilds array to work with individual guild documents
     { $unwind: "$guilds" },
 
