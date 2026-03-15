@@ -1,5 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import { OGSProvider } from '../providers/OGSProvider';
+import axios from 'axios';
 
 // Constants for your migration
 const DRY_RUN = false; 
@@ -45,13 +46,20 @@ async function migrateServer() {
             }
         }
 
+        updates.collection_sources = [];
+
         // 3. Migrate approved_collections -> collection_sources
         if (doc.approved_collections) {
-            updates.collection_sources = doc.approved_collections.map((id: number | string) => ({
-            source: 'ogs',
-            type: 'COLLECTION',
-            payload: id
-            }));
+            
+            for(let id of doc.approved_collections){
+                const response = await axios.get(`https://online-go.com/api/v1/puzzles/collections/${id}/`);
+                updates.collection_sources.push({
+                    name: response.data.name,
+                    source: 'ogs',
+                    type: 'COLLECTION',
+                    payload: id
+                })
+            }
             unsets.approved_collections = ""; // Remove old field
         }
 
