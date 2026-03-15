@@ -90,7 +90,7 @@ async function migratePlayer(){
         const result = await collection.updateMany(
         {}, 
         {
-            $unset: { "guilds.$[].active_moves": [] },
+            $set: { "guilds.$[].active_moves": [] },
         }
         );
 
