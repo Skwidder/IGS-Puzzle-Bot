@@ -78,18 +78,14 @@ export async function scheduleAnnoucmnet(
   }
 
   const channel: GuildBasedChannel | null = await guild.channels.fetch(channelId);
-  console.log(`text: ${channel?.isTextBased()}, DM: ${channel?.isDMBased}`);
   if ((!channel || !channel.isTextBased()) && channel?.isDMBased()) return "INVALID_CHANNEL";
-  console.log("Paset")
 
   const me = guild.members.me;
   if (!me) return "NO_PERMISSIONS";
-  console.log("Past2");
 
   const botPermissions = channel?.permissionsFor(me);
 
   if (!botPermissions?.has("SendMessages")) return "NO_PERMISSIONS";
-  console.log("past3");
 
   client.scheduledJobs[serverId] = await schedule.scheduleJob(scheduleExpression, async () => {
       let response = {}
@@ -108,7 +104,9 @@ export async function scheduleAnnoucmnet(
   return client.scheduledJobs[serverId];
 }
 
-export async function newSchedule(interaction: RepliableInteraction, scheduleExpression: string, channelId: string, role?: string){
+export async function newSchedule(interaction: RepliableInteraction, scheduleExpression: string, channelId: string, role?: string):
+  Promise<schedule.Job | "CRON_INVALID" | "NO_PERMISSIONS" | "INVALID_CHANNEL" | "INVALID_SERVER">{
+
   const client: IGSBot = interaction.client as IGSBot;
   const serverId: string | null = interaction.guildId;
   
@@ -164,7 +162,7 @@ export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?:
   
   await builder.saveAsPNG(`${guildId}.png`);
 
-  const fields = infoToEmbedFields(client, server.active_puzzle, true);
+  const fields = infoToEmbedFields(client, server.active_puzzle, undefined, true);
   const embed = embedMaker(fields);
   const messagePackage = embedPackager(embed, `${guildId}.png`);
   await sendAnnounceChannelMessage(client, guildId, `<@&${roleId ?? server?.announcementRole}>` || undefined, messagePackage, channelId);

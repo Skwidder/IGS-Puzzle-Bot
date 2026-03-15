@@ -93,9 +93,8 @@ async function execute(interaction: ChatInputCommandInteraction) {
             turnOffSchedule(interaction);
             return;
     }
-    newSchedule(interaction,cronExpression,channel?.id ?? "", role?.id ?? "");
-    console.log(channel?.id ?? "NuLL??");
-    const results = await scheduleAnnoucmnet(interaction.client as IGSBot, interaction.guildId, cronExpression, channel?.id ?? "", role?.id ?? "");
+
+    const results = newSchedule(interaction,cronExpression,channel?.id ?? "", role?.id ?? "");
     switch (results){
         case "CRON_INVALID":
             interactionReply(interaction, "Cron Invalid");
