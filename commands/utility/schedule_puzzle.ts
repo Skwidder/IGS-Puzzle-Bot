@@ -1,5 +1,6 @@
 import { interactionReply } from '../../discordManager.js';
-import { turnOffSchedule } from '../../ServerManager.js';
+import type { IGSBot } from '../../IGSBot.js';
+import { newSchedule, scheduleAnnoucmnet, turnOffSchedule } from '../../ServerManager.js';
 import { SlashCommandBuilder, PermissionFlagsBits, InteractionContextType, ChatInputCommandInteraction } from 'discord.js';
 
 const data =  new SlashCommandBuilder()
@@ -66,11 +67,16 @@ async function execute(interaction: ChatInputCommandInteraction) {
     const channel = interaction.options.getChannel('channel');
     let role = interaction.options.getRole('role');
     
+    if(!channel) interactionReply(interaction, "Must specify a channel");
+
     let cronExpression = "";
+
+    if(!interaction.guildId) throw Error("/schedule_puzzle not on a server");
 
     switch (subcommand) {
         case 'daily':
             cronExpression = '0 0 * * *'; // Every day at midnight
+            
             break;
         case 'weekly':
             cronExpression = '0 0 * * 0'; // Every Sunday at midnight
@@ -85,6 +91,27 @@ async function execute(interaction: ChatInputCommandInteraction) {
             break;
         case 'off':
             turnOffSchedule(interaction);
+            return;
+    }
+    newSchedule(interaction,cronExpression,channel?.id ?? "", role?.id ?? "");
+    console.log(channel?.id ?? "NuLL??");
+    const results = await scheduleAnnoucmnet(interaction.client as IGSBot, interaction.guildId, cronExpression, channel?.id ?? "", role?.id ?? "");
+    switch (results){
+        case "CRON_INVALID":
+            interactionReply(interaction, "Cron Invalid");
+        return;
+        case "INVALID_CHANNEL":
+            interactionReply(interaction, "Invalid channel");
+        return;
+        case "INVALID_SERVER":
+            interactionReply(interaction,"Invalid Server, Please report on github")
+            throw Error(`[New Schedule]: Invalid Server ${interaction.guildId}`);
+        case "NO_PERMISSIONS":
+            interactionReply(interaction,"Bot dose not have permission in that channel");
+        return;
+        default:
+            interactionReply(interaction, "Success");
+        break;
     }
 
 }

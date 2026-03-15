@@ -35,8 +35,8 @@ export async function advanceToNextPuzzle(client: IGSBot, guildId: string): Prom
     
     if(!puzzles) return{success: false, errorType: "COLLECTION_NOT_FOUND"};
     
-    const puzzleId = puzzles[Math.floor(Math.random() * puzzles.length)];
-    const puzzle: ActivePuzzle | null = await provider.fetchPuzzle(puzzleId);
+    const puzzlePick = puzzles[Math.floor(Math.random() * puzzles.length)];
+    const puzzle: ActivePuzzle | null = await provider.fetchPuzzle(puzzlePick);
 
     if(!puzzle) return {success: false, errorType: 'PUZZLE_NOT_FOUND'};
     
@@ -78,21 +78,26 @@ export async function scheduleAnnoucmnet(
   }
 
   const channel: GuildBasedChannel | null = await guild.channels.fetch(channelId);
-  if ((!channel || !channel.isTextBased())  && channel?.isDMBased()) return "INVALID_CHANNEL";
+  console.log(`text: ${channel?.isTextBased()}, DM: ${channel?.isDMBased}`);
+  if ((!channel || !channel.isTextBased()) && channel?.isDMBased()) return "INVALID_CHANNEL";
+  console.log("Paset")
 
   const me = guild.members.me;
   if (!me) return "NO_PERMISSIONS";
+  console.log("Past2");
 
   const botPermissions = channel?.permissionsFor(me);
 
-  if (botPermissions?.missing("SendMessages")) return "NO_PERMISSIONS";
+  if (!botPermissions?.has("SendMessages")) return "NO_PERMISSIONS";
+  console.log("past3");
 
   client.scheduledJobs[serverId] = await schedule.scheduleJob(scheduleExpression, async () => {
+      let response = {}
       try{
           //TODO: Grab result from this function and give user feedback
-          await advanceToNextPuzzle(client,serverId);
+          response = await advanceToNextPuzzle(client,serverId);
       }catch(error){
-          console.error(`Server: ${guild.name} has no queue or approved collections at scheduled time`);
+          console.error(`Server: ${guild.name} has no queue or approved collections at scheduled time: ${error}`);
           return;
       }
 
@@ -114,28 +119,10 @@ export async function newSchedule(interaction: RepliableInteraction, scheduleExp
   client.scheduledJobs?.serverId?.cancel();
   await clearSchedule(client, serverId);
   
-  
   const results = await scheduleAnnoucmnet(client, serverId, scheduleExpression, channelId, role);
-
-  switch (results){
-    case "CRON_INVALID":
-      interactionReply(interaction, "Cron Invalid");
-      return;
-    case "INVALID_CHANNEL":
-      interactionReply(interaction, "Invalid channel");
-      return;
-    case "INVALID_SERVER":
-      interactionReply(interaction,"Invalid Server, Please report on github")
-      throw Error(`[New Schedule]: Invalid Server ${interaction.guildId}`);
-    case "NO_PERMISSIONS":
-      interactionReply(interaction,"Bot dose not have permission in that channel");
-      return;
-    default:
-      interactionReply(interaction, "Success");
-      break;
-  }
-
   setSchedule(client, serverId, scheduleExpression, channelId, role);
+
+  return results;
 }
 
 export async function turnOffSchedule(interaction: RepliableInteraction){

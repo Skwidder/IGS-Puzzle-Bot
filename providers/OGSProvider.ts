@@ -54,8 +54,7 @@ export class OGSProvider extends PuzzleProvider{
             response = await axios.get(`${this.baseURL}?collection=${collectionSource.payload}&page_size=50&page=${i}`);
 
             if(response.status != 200) return null;
-
-            puzzles.push(... response.data.results.id);
+            puzzles.push(... response.data.results.map((item: any) => item.id));
             i++;
         }while(response.data.count > (50 * (i - 1)));
        
