@@ -33,10 +33,12 @@ export function infoToEmbedFields(client: IGSBot, puzzle: ActivePuzzle, response
     if(response?.isCorrect){
         sourceText = `[${provider.name}](${provider.baseURL}/${puzzle.puzzleId}): ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;
         notes = notes + ":white_check_mark: Correct! \n";
-    } else if(response?.isCorrect === false){
-        notes = notes + ":x: Incorrect! \n do !reset to start again\n";
-    }else{
+    } else{
         sourceText = `${provider.name}: ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;
+    }
+
+    if(response?.isSequanceEnd && response.isCorrect === false){
+        notes = notes + ":x: Incorrect! \n do !reset to start again\n";
     }
 
     if(response?.comments){
@@ -80,7 +82,6 @@ export function infoToEmbedFields(client: IGSBot, puzzle: ActivePuzzle, response
     if(howToPlay){
         feilds.push({name:"How To Play",value:"Just type /play"});
     }
-
     return feilds;
 }
 

@@ -83,7 +83,7 @@ export class OGSProvider extends PuzzleProvider{
             return {
                 isSequanceEnd: true,
                 isCorrect: false,
-                comments: "Move not mapped"
+                comments: ":interrobang: Move not mapped"
             };
         }
 
@@ -172,7 +172,7 @@ export class OGSProvider extends PuzzleProvider{
                 return {
                     isSequanceEnd: true,
                     isCorrect: false,
-                    comments: "Response not mapped",
+                    comments: ":interrobang:Response not mapped",
                     responseMove: responseMove,
                     marks: marks,
                 };

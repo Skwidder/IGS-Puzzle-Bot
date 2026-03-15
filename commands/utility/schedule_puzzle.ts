@@ -13,7 +13,7 @@ const data =  new SlashCommandBuilder()
                 option
                     .setName('channel')
                     .setDescription('Channel for the announcement (if left blank, no announcement will be made)')
-                    .setRequired(false))
+                    .setRequired(true))
             .addRoleOption(option => 
                 option
                     .setName('role')
@@ -27,7 +27,7 @@ const data =  new SlashCommandBuilder()
                 option
                     .setName('channel')
                     .setDescription('Channel for the announcement (if left blank, no announcement will be made)')
-                    .setRequired(false))
+                    .setRequired(true))
             .addRoleOption(option => 
                 option
                     .setName('role')
@@ -46,7 +46,7 @@ const data =  new SlashCommandBuilder()
                 option
                     .setName('channel')
                     .setDescription('Channel for the announcement (if left blank, no announcement will be made)')
-                    .setRequired(false))
+                    .setRequired(true))
             .addRoleOption(option => 
                 option
                     .setName('role')

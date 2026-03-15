@@ -92,7 +92,6 @@ export async function userMessageHandle(message: Message){
         }
 
         if(!activeServer) throw Error("Active server should be set by now");
-        console.log(activeServer?.active_moves);
 
         const renderOptions: RenderBoardOptions = {
             newMoveSGF: newMoveSGF,
@@ -213,7 +212,7 @@ async function renderAndSendBoard(
 
     //We now know its a okay move
     //TODO: find a way to move this
-    if(newMoveSGF) addUserMove(client, user.id, newMoveSGF);
+    if(newMoveSGF) await addUserMove(client, user.id, newMoveSGF);
     if(response?.responseMove) addUserMove(client, user.id, response.responseMove);
 
     // Build Image and Grid
