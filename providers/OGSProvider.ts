@@ -66,7 +66,10 @@ export class OGSProvider extends PuzzleProvider{
         let moveTree = puzzle.tree;
         
         //Add on players new move
-        let moves: string[] = pastMoves ?? [];
+        let moves: string[] = [];
+        if(pastMoves){
+            moves = [...pastMoves];
+        }
         moves.push(newMove);
 
         if(!puzzle.initialPlayer) throw Error("OGS: Puzzle initial player is null");

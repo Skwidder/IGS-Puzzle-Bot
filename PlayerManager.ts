@@ -93,8 +93,8 @@ export async function userMessageHandle(message: Message){
             newMoveSGF: newMoveSGF,
             response: response,
         }
-        
         renderAndSendBoard(client, message.author, puzzle, activeServer.active_moves, renderOptions);
+        return;
     }
     sendUserDM(message.author,"Invalid Command!");
 }

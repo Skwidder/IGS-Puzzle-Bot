@@ -5,7 +5,7 @@
  */
 export function sgfToCoords(sgfMove: string): {x: number, y: number} | null {
     if (sgfMove && sgfMove.length == 5) {
-         const x: number = sgfMove.charCodeAt(2) - 'a'.charCodeAt(0);
+        const x: number = sgfMove.charCodeAt(2) - 'a'.charCodeAt(0);
         const y: number = sgfMove.charCodeAt(3) - 'a'.charCodeAt(0);
         return {x: x, y: y };
     } 

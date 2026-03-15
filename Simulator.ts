@@ -39,7 +39,6 @@ export async function getSimulatedBoard(
 
     //add past moves
     for (let move of pastMoves) {
-        console.log(`move: ${move}`);
         const coord = sgfToCoords(move);
         if(!coord) continue;
 
@@ -48,7 +47,6 @@ export async function getSimulatedBoard(
         //state is false if move is invalid
         if (state == false) return false;
     }
-    
     
     //TODO: rewite to append to past moves(DRC)
 
@@ -75,19 +73,19 @@ export async function getSimulatedBoard(
 
 
 //for testing
-// function printBoard(array: any) {
-//     if (array.length !== 361) {
-//         console.log("Array must be exactly 361 elements");
-//         return;
-//     }
+function printBoard(array: any) {
+    if (array.length !== 361) {
+        console.log("Array must be exactly 361 elements");
+        return;
+    }
 
-//     for (let row = 0; row < 19; row++) {
-//         let line = '';
-//         for (let col = 0; col < 19; col++) {
-//             const index = row * 19 + col;
-//             // Pad each number to be 2 characters wide (including space)
-//             line += (array[index] >= 0 ? ' ' : '') + array[index] + ' ';
-//         }
-//         console.log(line.trim());
-//     }
-// }
+    for (let row = 0; row < 19; row++) {
+        let line = '';
+        for (let col = 0; col < 19; col++) {
+            const index = row * 19 + col;
+            // Pad each number to be 2 characters wide (including space)
+            line += (array[index] >= 0 ? ' ' : '') + array[index] + ' ';
+        }
+        console.log(line.trim());
+    }
+}
