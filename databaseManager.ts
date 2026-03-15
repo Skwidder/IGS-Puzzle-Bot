@@ -94,6 +94,15 @@ export async function getUser(client: IGSBot, userId: string): Promise<UserDocum
   return user ?? null;
 }
 
+export async function getUserActiveServerState(client: IGSBot, userId: string): Promise<UserServerState | null>{
+  const user = await getUser(client, userId);
+  if(!user) return null;
+
+  const activeServer: UserServerState[] = user?.guilds?.filter(g => g.active === 1) || [];
+  if(activeServer.length !== 1) return null;
+
+  return activeServer[0];
+}
 
 export async function addUserMove(client: IGSBot, userId: string, stoneToAdd: string) {
   await client.usersCol.updateOne({
@@ -106,7 +115,7 @@ export async function addUserMove(client: IGSBot, userId: string, stoneToAdd: st
   });
 }
 
-export async function removeLastMove(client: IGSBot, userId: string) {
+export async function removeLastMove(client: IGSBot, userId: string): Promise<UserServerState | null> {
   client.usersCol.updateOne({
     "userId": userId,
     "guilds.active": 1
@@ -115,9 +124,11 @@ export async function removeLastMove(client: IGSBot, userId: string) {
       "guilds.$.active_moves": 1
     }
   });
+  
+  return await getUserActiveServerState(client, userId);
 }
 
-export async function resetUserMoves(client: IGSBot, userId: string) {
+export async function resetUserMoves(client: IGSBot, userId: string): Promise<UserServerState | null> {
   await client.usersCol.updateOne(
     {
       "userId": userId,
@@ -129,6 +140,8 @@ export async function resetUserMoves(client: IGSBot, userId: string) {
       }
     }
   );
+
+  return await getUserActiveServerState(client, userId);
 }
 
 //sets active moves to [], tires to 0 and in progress to 0, and active to 0

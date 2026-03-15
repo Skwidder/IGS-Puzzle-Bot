@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, Client, Message, User, type AnySelectMenuInteraction, type APIEmbedField, type Interaction, type RepliableInteraction } from "discord.js"
-import { addUserMove, createDBUser, getServer, getUser, removeLastMove, resetUserActiveServers, 
+import { addUserMove, createDBUser, getServer, getUser, getUserActiveServerState, removeLastMove, resetUserActiveServers, 
     resetUserMoves, setActivePuzzle, setUserActiveServer, type ActivePuzzle, type ServerConfig, type UserDocument, type UserServerState } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
 import { GoBoardImageBuilder } from "./ImageBuilder";
@@ -27,7 +27,8 @@ export async function userMessageHandle(message: Message){
             }
         }
 
-        const activeServer: UserServerState | null = player?.guilds?.filter(g => g.active === 1)[0] || null;
+
+        let activeServer = await getUserActiveServerState(client, message.author.id);
         const inProgressServers: UserServerState[] | null =  player?.guilds?.filter(g => g.in_progress === 1) || null; 
 
         if(!activeServer){
@@ -36,8 +37,7 @@ export async function userMessageHandle(message: Message){
                 return;
             }else if(inProgressServers.length == 1){
                 await setUserActiveServer(client,player.userId,inProgressServers[0].guildId);
-                userMessageHandle(message);
-                return;
+                activeServer = await getUserActiveServerState(client, message.author.id);
             }
         }
 
@@ -55,8 +55,8 @@ export async function userMessageHandle(message: Message){
             sendPuzzleSelectorMenu(message.author, inProgressGuilds);
             return;
         }
-        
 
+        if(!activeServer) throw Error("Active server should be set by now");
         const puzzle: ActivePuzzle | undefined = await getUserActivePuzzle(client,player);
         
         if(!puzzle) throw Error("How do we have an active server but no active puzzle?");
@@ -68,7 +68,7 @@ export async function userMessageHandle(message: Message){
 
         //move
         if(message.content.toUpperCase() === "!RESET"){
-            await resetUserMoves(client,message.author.id);
+            activeServer = await resetUserMoves(client,message.author.id);
         }else if(message.content.toUpperCase() === "!UNDO"){
             const playerColor = puzzle.initialPlayer == "black" ? "B" : "W";
             const responseColor = puzzle.initialPlayer == "white" ? "B" : "W";
@@ -81,7 +81,7 @@ export async function userMessageHandle(message: Message){
                 }
             }
             
-            await removeLastMove(client, player.userId);
+            activeServer = await removeLastMove(client, player.userId);
         }else{
             newMoveSGF = standardNotationToSGF(puzzle.initialPlayer, message.content.trim().substring(1), puzzle.size);
             if (!newMoveSGF){
@@ -90,6 +90,9 @@ export async function userMessageHandle(message: Message){
             } 
             response = await puzzleProvider.getMoveResponse(puzzle, activeServer.active_moves, newMoveSGF);
         }
+
+        if(!activeServer) throw Error("Active server should be set by now");
+        console.log(activeServer?.active_moves);
 
         const renderOptions: RenderBoardOptions = {
             newMoveSGF: newMoveSGF,
@@ -241,8 +244,7 @@ async function renderAndSendBoard(
     await builder.saveAsPNG(pngPath);
 
     // Build and send the embed message
-    const isCorrect = response?.isCorrect ?? false;
-    const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle, false, showHelp, isCorrect);
+    const fields: APIEmbedField[] = infoToEmbedFields(client, puzzle, response, false, showHelp);
     const embed = embedMaker(fields);
     const messagePackage: EmbedPackage = embedPackager(embed, pngPath);
     

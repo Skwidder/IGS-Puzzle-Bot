@@ -3,6 +3,7 @@
 import {AttachmentBuilder, EmbedBuilder, type APIEmbedField } from "discord.js";
 import type { ActivePuzzle } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
+import type { MoveResponse } from "./providers/PuzzleProvider";
 
 export interface EmbedPackage {
     embed?: EmbedBuilder
@@ -20,20 +21,36 @@ export function embedPackager(embed: EmbedBuilder, imagePath?: string): EmbedPac
     return {embed: embed, attachment: file ?? undefined}
 }
 
-export function infoToEmbedFields(client: IGSBot, puzzle: ActivePuzzle, howToPlay: boolean = false,
-   showHelp: boolean = false, puzzleLink: boolean = false 
+export function infoToEmbedFields(client: IGSBot, puzzle: ActivePuzzle, response?: MoveResponse, howToPlay: boolean = false,
+   showHelp: boolean = false
 ): APIEmbedField[] {
     let feilds: APIEmbedField[] = [];
-    
+    let notes = "";
 
     const provider = client.providerRegistry.get(puzzle.source);
 
     let sourceText = ""
-    if(puzzleLink){
+    if(response?.isCorrect){
         sourceText = `[${provider.name}](${provider.baseURL}/${puzzle.puzzleId}): ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;
-    } else {
+        notes = notes + ":white_check_mark: Correct! \n";
+    } else if(response?.isCorrect === false){
+        notes = notes + ":x: Incorrect! \n do !reset to start again\n";
+    }else{
         sourceText = `${provider.name}: ${puzzle?.collectionName ?? ""} By ${puzzle.author}\n\n`;
     }
+
+    if(response?.comments){
+        notes = notes + response.comments;
+    }
+
+    if(notes){
+        feilds.push({
+            name: "Notes",
+            value: notes,
+            inline: true
+        })
+    }
+
 
     feilds.push({
         name: "Source",
@@ -41,16 +58,17 @@ export function infoToEmbedFields(client: IGSBot, puzzle: ActivePuzzle, howToPla
         inline: true
     });
 
-
-    //Discord Embed dose not allow a feild to be longer than 1024 characters,
-    //so if the description is longer than that lets just set it to nothing
-    let description = puzzle.description + "\n\n";
-    if(description.length <= 1024){
-        feilds.push({
-            name: "Description",
-            value:  description + "\n\n",
-            inline: true
-        });
+    if(showHelp || howToPlay){
+        //Discord Embed dose not allow a feild to be longer than 1024 characters,
+        //so if the description is longer than that lets just set it to nothing
+        let description = puzzle.description + "\n\n";
+        if(description.length <= 1024){
+            feilds.push({
+                name: "Description",
+                value:  description + "\n\n",
+                inline: true
+            });
+        }
     }
     
     if(showHelp){
