@@ -1,8 +1,9 @@
 import { Client, Collection, GatewayIntentBits, Partials, UserManager } from "discord.js";
 import { MongoClient, Db, Collection as MongoCollection } from "mongodb";
 import type { Job } from "node-schedule";
-import { ensureAllServersExist, type ServerConfig, type UserDocument } from "./databaseManager";
+import { ensureAllServersExist, getAllServers, setSchedule, type ServerConfig, type UserDocument } from "./databaseManager";
 import { Registry } from "./providers/ProviderRegistry";
+import { scheduleAnnoucmnet } from "./ServerManager";
 
 
 export class IGSBot extends Client {
@@ -13,7 +14,7 @@ export class IGSBot extends Client {
     public usersCol!: MongoCollection<UserDocument>
     public scheduledJobs: Record<string, Job> = {}; 
     public providerRegistry: Registry = new Registry();
-
+ 
     constructor() {
         super({
             intents: [
@@ -44,8 +45,7 @@ export class IGSBot extends Client {
     }
 
     async scheduleJobs() {
-        //TODO: Fix
-        const servers = await this.serverCol.find({}).toArray()
+        const servers = await getAllServers(this);
 
         for (const server of servers){
             const guildId = server.serverId;
@@ -53,11 +53,10 @@ export class IGSBot extends Client {
             const channel = server.announcementChannel;
             const role = server.announcementRole;
 
-            if(!scheduleExpression)
+            if(!scheduleExpression || !channel)
                 continue;
 
-            // Create the scheduled job
-            this.scheduledJobs = this.scheduledJobs || {};
+            scheduleAnnoucmnet(this, server.serverId, scheduleExpression, channel, role ?? undefined);
         }
     }
 }

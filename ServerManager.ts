@@ -86,6 +86,9 @@ export async function scheduleAnnoucmnet(
   const botPermissions = channel?.permissionsFor(me);
 
   if (!botPermissions?.has(["SendMessages","ViewChannel"])) return "NO_PERMISSIONS";
+  
+
+  
   client.scheduledJobs[serverId] = await schedule.scheduleJob(scheduleExpression, async () => {
       let response = {}
       try{
@@ -117,7 +120,10 @@ export async function newSchedule(interaction: RepliableInteraction, scheduleExp
 
   //Remove old schedual to be safe
   //TODO: This might cause an issue where user gives up after failing then they dont have a schedule any more
-  client.scheduledJobs?.serverId?.cancel();
+  client.scheduledJobs?.[serverId]?.cancel();
+  delete client.scheduledJobs[serverId];
+  
+  console.log(client.scheduledJobs);
   await clearSchedule(client, serverId);
   
   const results = await scheduleAnnoucmnet(client, serverId, scheduleExpression, channelId, role);
@@ -154,6 +160,8 @@ export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?:
   const board: Position | false = await getSimulatedBoard(server.active_puzzle, []);
   if(!board) return null; //how has this happend
 
+  const targetRole = roleId || server?.announcementRole;
+
   const builder = new GoBoardImageBuilder(board.size);
   builder.addWgoGridStones(board.grid);
   
@@ -168,7 +176,7 @@ export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?:
   const fields = infoToEmbedFields(client, server.active_puzzle, undefined, true);
   const embed = embedMaker(fields);
   const messagePackage = embedPackager(embed, `${guildId}.png`);
-  const response = await sendAnnounceChannelMessage(client, guildId, `<@&${roleId ?? server?.announcementRole}>` || undefined, messagePackage, channelId);
+  const response = await sendAnnounceChannelMessage(client, guildId, targetRole ? `<@&${targetRole}>` : undefined, messagePackage, channelId);
 
   builder.deletePNG();
   if(!response) return "NO_PERMISSIONS";

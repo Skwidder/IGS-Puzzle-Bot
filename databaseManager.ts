@@ -72,6 +72,10 @@ export async function ensureAllServersExist(client: IGSBot) {
   }
 }
 
+export async function getAllServers(client: IGSBot): Promise<ServerConfig[]> {
+  return await client.serverCol.find({}).toArray();
+}
+
 export async function getServer(client: IGSBot, guildId: string): Promise<ServerConfig | null> {
   const activePuzzleServer = await client.serverCol.findOne({
     "serverId": guildId
@@ -273,28 +277,6 @@ export async function resetUserActiveServers(client: IGSBot, userId: string){
 export type InProgressPuzzleEntry = UserServerState & {
   serverName: string;
 };
-
-//TODO: I really dont like this function the way it is
-export async function getInProgessPuzzles(client: IGSBot, userId: string): Promise<InProgressPuzzleEntry[]> {
-  const user = await getUser(client, userId);
-  // Then count inprogress puzzles using chained operations:
-  const inProgressPuzzles = user?.guilds?.filter(g => g.in_progress === 1) || [];
-
-  const results: InProgressPuzzleEntry[] = await Promise.all(
-    inProgressPuzzles.map(async (item) => {
-      const serverConfig = await client.serverCol.findOne({
-        serverId: item.guildId
-      });
-
-      return {
-        ...item,
-        serverName: serverConfig?.name ?? "Unknown Server",
-      };
-    }
-    ));
-
-  return results;
-}
 
 export async function getScores(client: IGSBot, guildId: string) {
   const userArray = await client.usersCol.aggregate([
