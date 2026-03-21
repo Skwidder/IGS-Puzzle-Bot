@@ -1,29 +1,29 @@
 /**
- * 
+ *
  * @param sgfMove a string in SGF format eg. B(ef)
- * @returns an object with x and y for the x and y coordinets 
+ * @returns an object with x and y for the x and y coordinets
  */
-export function sgfToCoords(sgfMove: string): {x: number, y: number} | null {
-    if (sgfMove && sgfMove.length == 5) {
-        const x: number = sgfMove.charCodeAt(2) - 'a'.charCodeAt(0);
-        const y: number = sgfMove.charCodeAt(3) - 'a'.charCodeAt(0);
-        return {x: x, y: y };
-    } 
-    
-    if (sgfMove && sgfMove.length == 2) {
-        const x: number = sgfMove.charCodeAt(0) - 'a'.charCodeAt(0);
-        const y: number = sgfMove.charCodeAt(1) - 'a'.charCodeAt(0);
-        return {x: x, y: y };
-    }   
+export function sgfToCoords(sgfMove: string): { x: number; y: number } | null {
+  if (sgfMove && sgfMove.length == 5) {
+    const x: number = sgfMove.charCodeAt(2) - "a".charCodeAt(0);
+    const y: number = sgfMove.charCodeAt(3) - "a".charCodeAt(0);
+    return { x: x, y: y };
+  }
 
-    return null;
+  if (sgfMove && sgfMove.length == 2) {
+    const x: number = sgfMove.charCodeAt(0) - "a".charCodeAt(0);
+    const y: number = sgfMove.charCodeAt(1) - "a".charCodeAt(0);
+    return { x: x, y: y };
+  }
+
+  return null;
 }
 
-export function coordsToSGF(coord: {x: number, y: number}): string {
-    let SGF: string = String.fromCharCode(coord.x + 'a'.charCodeAt(0));
-    SGF += String.fromCharCode(coord.y + 'a'.charCodeAt(0));
-    
-    return SGF;
+export function coordsToSGF(coord: { x: number; y: number }): string {
+  let SGF: string = String.fromCharCode(coord.x + "a".charCodeAt(0));
+  SGF += String.fromCharCode(coord.y + "a".charCodeAt(0));
+
+  return SGF;
 }
 
 // function coordsToStandard(x, y, size = 19) {
@@ -40,32 +40,35 @@ export function coordsToSGF(coord: {x: number, y: number}): string {
 //     return `${col}${row}`;
 // }
 
+export function standardNotationToSGF(
+  playerColor: "white" | "black",
+  coord: string,
+  size = 19,
+): string | null {
+  if (!coord || coord.length < 2) {
+    return null;
+  }
 
-export function standardNotationToSGF(playerColor: "white" | "black", coord: string, size=19): string | null {
-    if (!coord || coord.length < 2) {
-        return null;
-    }
+  // Split into column letter and row number
+  const col = coord[0].toUpperCase();
+  const row = parseInt(coord.slice(1));
 
-    // Split into column letter and row number
-    const col = coord[0].toUpperCase();
-    const row = parseInt(coord.slice(1));
+  // Convert column: A->a, B->b, etc.
+  // Note: SGF skips 'i' to avoid confusion
+  let sgfCol = String.fromCharCode(
+    col.charCodeAt(0) - "A".charCodeAt(0) + "a".charCodeAt(0),
+  );
+  if (col.charCodeAt(0) >= "I".charCodeAt(0)) {
+    sgfCol = String.fromCharCode(sgfCol.charCodeAt(0) - 1);
+  }
 
-    // Convert column: A->a, B->b, etc.
-    // Note: SGF skips 'i' to avoid confusion
-    let sgfCol = String.fromCharCode(col.charCodeAt(0) - 'A'.charCodeAt(0) + 'a'.charCodeAt(0));
-    if (col.charCodeAt(0) >= 'I'.charCodeAt(0)) {
-        sgfCol = String.fromCharCode(sgfCol.charCodeAt(0) - 1);
-    }
+  // Convert row: SGF counts from bottom-up, a=1
+  // For 19x19 board, row 19 = 'a', row 1 = 's'
+  const sgfRow = String.fromCharCode("s".charCodeAt(0) - (19 - size) - row + 1);
 
-
-    // Convert row: SGF counts from bottom-up, a=1
-    // For 19x19 board, row 19 = 'a', row 1 = 's'
-    const sgfRow = String.fromCharCode(('s'.charCodeAt(0) - (19 - size)) - row + 1);
-
-
-    let SGF = playerColor == "black" ? "B[" : "W["; 
-    SGF += sgfCol + sgfRow + ']';
-    return SGF;
+  let SGF = playerColor == "black" ? "B[" : "W[";
+  SGF += sgfCol + sgfRow + "]";
+  return SGF;
 }
 
 // function coordsToStandard(x, y, size = 19) {

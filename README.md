@@ -11,6 +11,7 @@ or feel free to self host.
 ## Usage
 
 ### Admin Commands
+
 - `/add_puzzle [id] [position]` - Add an OGS puzzle to the server queue
 - `/announce_puzzle [channel] [role?]` - Announce the current puzzle in a specific channel
 - `/next_puzzle` - Move to the next puzzle in the queue
@@ -26,7 +27,9 @@ The bot supports automatic puzzle advancement with optional announcements. Serve
 ## Basic Usage
 
 ### Daily Scheduling
+
 Schedule puzzles to advance every day at midnight:
+
 ```
 /schedule_puzzle daily
   [channel:#puzzles]  Optional: Channel to announce new puzzles
@@ -34,7 +37,9 @@ Schedule puzzles to advance every day at midnight:
 ```
 
 ### Weekly Scheduling
+
 Schedule puzzles to advance every Sunday at midnight:
+
 ```
 /schedule_puzzle weekly
   [channel:#puzzles]  Optional: Channel to announce new puzzles
@@ -42,7 +47,9 @@ Schedule puzzles to advance every Sunday at midnight:
 ```
 
 ### Custom Scheduling
+
 Set a custom schedule using cron expression:
+
 ```
 /schedule_puzzle custom
   cron:"0 0 * * *"   Required: Cron expression for scheduling
@@ -51,6 +58,7 @@ Set a custom schedule using cron expression:
 ```
 
 ### Turn Off Scheduling
+
 ```
 /schedule_puzzle off
 ```
@@ -58,6 +66,7 @@ Set a custom schedule using cron expression:
 ## Cron Expression Guide
 
 For custom scheduling, you'll need to provide a cron expression. Here's the format:
+
 ```
 ┌───────────── minute (0 - 59)
 │ ┌───────────── hour (0 - 23)
@@ -69,6 +78,7 @@ For custom scheduling, you'll need to provide a cron expression. Here's the form
 ```
 
 Common Examples:
+
 - `0 0 * * *` - Every day at midnight
 - `0 12 * * *` - Every day at noon
 - `0 0 * * 0` - Every Sunday at midnight
@@ -78,6 +88,7 @@ Common Examples:
 ## Puzzle Queue Behavior
 
 When a scheduled advancement occurs:
+
 1. If there are puzzles in the queue, the bot will move to the next puzzle
 2. If the queue is empty or has only one puzzle remaining, the bot will:
    - Check approved puzzle collections
@@ -88,21 +99,25 @@ When a scheduled advancement occurs:
 ## Announcements
 
 Announcements are optional. You can:
+
 - Schedule without announcements by not specifying a channel
 - Schedule with announcements by specifying a channel
 - Schedule with announcements and role pings by specifying both channel and role
 
 The announcement will include:
+
 - The new puzzle details
 - Visual representation of the puzzle
 - Role ping (if configured)
 
 ### User Commands
+
 - `/play` - Start solving the current puzzle
 - `/show_puzzle [id]` - Display information about a specific puzzle
 - `/leaderboard` - View the server's puzzle solving leaderboard
 
 ### Puzzle Solving Commands (DM)
+
 - `![coordinate]` - Make a move (e.g., `!Q4`)
 - `!reset` - Reset the current puzzle
 - `!undo` - Undo your last move
@@ -110,11 +125,13 @@ The announcement will include:
 ## Setup
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/Skwidder/IGS-Puzzle-Bot.git
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
@@ -124,21 +141,24 @@ npm install
    - For help setting up MongoDB Atlas, follow the [MongoDB Atlas Tutorial](https://www.mongodb.com/resources/products/platform/mongodb-atlas-tutorial)
 
 4. Create a `config.json` file with your credentials:
+
 ```json
 {
-    "discord_token": "your-discord-token",
-    "discord_clientId": "your-client-id",
-    "discord_guildId": "your-guild-id",
-    "dbConnString": "your-mongodb-conn-string"
+  "discord_token": "your-discord-token",
+  "discord_clientId": "your-client-id",
+  "discord_guildId": "your-guild-id",
+  "dbConnString": "your-mongodb-conn-string"
 }
 ```
 
 5. Deploy commands
+
 ```bash
 node deploy-commands.js
 ```
 
 6. Start the bot
+
 ```bash
 node index.js
 ```
@@ -158,6 +178,7 @@ node index.js
 ## Development
 
 This bot uses:
+
 - Discord.js for bot functionality
 - MongoDB for data persistence
 - Sharp for image processing
@@ -183,4 +204,5 @@ Skwidder
 For issues and feature requests, please use the GitHub issues page.
 
 ## Support Me
+
 Support this project and others like it on Ko-Fi: https://ko-fi.com/skwidder

@@ -1,7 +1,7 @@
-import { Client } from 'discord.js';
-import { IGSBot } from './IGSBot';
-import { Providers } from './providers/ProviderRegistry';
-import type { InsertOneResult } from 'mongodb';
+import { Client } from "discord.js";
+import { IGSBot } from "./IGSBot";
+import { Providers } from "./providers/ProviderRegistry";
+import type { InsertOneResult } from "mongodb";
 
 export interface UserServerState {
   guildId: string;
@@ -42,7 +42,7 @@ export interface ActivePuzzle {
   tree: any;
   size: number;
   initialPlayer: "white" | "black";
-  whiteStonesInitial: string[]; 
+  whiteStonesInitial: string[];
   blackStonesInitial: string[];
   author: string;
   description?: string;
@@ -52,14 +52,13 @@ export interface ActivePuzzle {
 export interface CollectionSource {
   source: Providers;
   name: string;
-  type: 'COLLECTION' | 'SEARCH';
+  type: "COLLECTION" | "SEARCH";
   payload: string | number;
 }
 
 export async function ensureAllServersExist(client: IGSBot) {
-
   // Get the list of guilds and loop through each checking if they exist
-  const guilds = client.guilds.cache//.each((guild) => {
+  const guilds = client.guilds.cache; //.each((guild) => {
 
   for (const [, guild] of guilds) {
     const existingServer = await getServer(client, guild.id);
@@ -67,7 +66,7 @@ export async function ensureAllServersExist(client: IGSBot) {
     if (!existingServer) {
       console.log(`Server ${guild.id} does not exist. Creating...`);
 
-      createDBServer(client,guild.id,guild.name)
+      createDBServer(client, guild.id, guild.name);
     }
   }
 }
@@ -76,67 +75,93 @@ export async function getAllServers(client: IGSBot): Promise<ServerConfig[]> {
   return await client.serverCol.find({}).toArray();
 }
 
-export async function getServer(client: IGSBot, guildId: string): Promise<ServerConfig | null> {
+export async function getServer(
+  client: IGSBot,
+  guildId: string,
+): Promise<ServerConfig | null> {
   const activePuzzleServer = await client.serverCol.findOne({
-    "serverId": guildId
-  })
+    serverId: guildId,
+  });
 
   return activePuzzleServer;
 }
 
-export async function getUser(client: IGSBot, userId: string): Promise<UserDocument | null> {
+export async function getUser(
+  client: IGSBot,
+  userId: string,
+): Promise<UserDocument | null> {
   const user: UserDocument | null = await client.usersCol.findOne({
-    "userId": userId
+    userId: userId,
   });
 
   return user ?? null;
 }
 
-export async function getUserActiveServerState(client: IGSBot, userId: string): Promise<UserServerState | null>{
+export async function getUserActiveServerState(
+  client: IGSBot,
+  userId: string,
+): Promise<UserServerState | null> {
   const user = await getUser(client, userId);
-  if(!user) return null;
+  if (!user) return null;
 
-  const activeServer: UserServerState[] = user?.guilds?.filter(g => g.active === 1) || [];
-  if(activeServer.length !== 1) return null;
+  const activeServer: UserServerState[] =
+    user?.guilds?.filter((g) => g.active === 1) || [];
+  if (activeServer.length !== 1) return null;
 
   return activeServer[0];
 }
 
-export async function addUserMove(client: IGSBot, userId: string, stoneToAdd: string) {
-  await client.usersCol.updateOne({
-    "userId": userId,
-    "guilds.active": 1
-  }, {
-    $push: {
-      "guilds.$.active_moves": stoneToAdd
-    }
-  });
+export async function addUserMove(
+  client: IGSBot,
+  userId: string,
+  stoneToAdd: string,
+) {
+  await client.usersCol.updateOne(
+    {
+      userId: userId,
+      "guilds.active": 1,
+    },
+    {
+      $push: {
+        "guilds.$.active_moves": stoneToAdd,
+      },
+    },
+  );
 }
 
-export async function removeLastMove(client: IGSBot, userId: string): Promise<UserServerState | null> {
-  client.usersCol.updateOne({
-    "userId": userId,
-    "guilds.active": 1
-  }, {
-    $pop: {
-      "guilds.$.active_moves": 1
-    }
-  });
-  
+export async function removeLastMove(
+  client: IGSBot,
+  userId: string,
+): Promise<UserServerState | null> {
+  client.usersCol.updateOne(
+    {
+      userId: userId,
+      "guilds.active": 1,
+    },
+    {
+      $pop: {
+        "guilds.$.active_moves": 1,
+      },
+    },
+  );
+
   return await getUserActiveServerState(client, userId);
 }
 
-export async function resetUserMoves(client: IGSBot, userId: string): Promise<UserServerState | null> {
+export async function resetUserMoves(
+  client: IGSBot,
+  userId: string,
+): Promise<UserServerState | null> {
   await client.usersCol.updateOne(
     {
-      "userId": userId,
-      "guilds.active": 1
+      userId: userId,
+      "guilds.active": 1,
     },
     {
       $set: {
-        "guilds.$.active_moves": []
-      }
-    }
+        "guilds.$.active_moves": [],
+      },
+    },
   );
 
   return await getUserActiveServerState(client, userId);
@@ -153,27 +178,31 @@ export async function resetPuzzle(client: IGSBot, guildId: string) {
         "guilds.$.active": 0,
         "guilds.$.in_progress": 0,
         "guilds.$.solved": false,
-      }
-    });
+      },
+    },
+  );
 }
 
 /**
- * 
+ *
  * @param client IGSBot
  * @param guildId id of the server to move the queue
  * @returns PuzzleQueueItem The first element in the queue before the move,
  * aka the one that got removed or null if the server dose not exist or no item was removed
  */
-export async function movePuzzleQueue(client: IGSBot, guildId: string): Promise<PuzzleQueueItem | null> {
-  const server = await getServer(client,guildId);
-  if(!server) return null;
-
+export async function movePuzzleQueue(
+  client: IGSBot,
+  guildId: string,
+): Promise<PuzzleQueueItem | null> {
+  const server = await getServer(client, guildId);
+  if (!server) return null;
 
   const response = await client.serverCol.updateOne(
     { serverId: guildId },
-    { $pop: { puzzle_queue: -1 } });  // -1 removes first element
+    { $pop: { puzzle_queue: -1 } },
+  ); // -1 removes first element
 
-  if(response.modifiedCount = 0) return null; 
+  if ((response.modifiedCount = 0)) return null;
 
   return server.puzzle_queue[0]; //return old first item
 }
@@ -181,96 +210,105 @@ export async function movePuzzleQueue(client: IGSBot, guildId: string): Promise<
 export async function incrementTries(client: IGSBot, userId: string) {
   await client.usersCol.updateOne(
     {
-      "userId": userId,
-      "guilds.active": 1
+      userId: userId,
+      "guilds.active": 1,
     },
     {
       $inc: {
-        "guilds.$.tries": 1
-      }
-    })
+        "guilds.$.tries": 1,
+      },
+    },
+  );
 }
 
 export async function incrementScore(client: IGSBot, userId: string) {
   await client.usersCol.updateOne(
     {
-      "userId": userId,
-      "guilds.active": 1
+      userId: userId,
+      "guilds.active": 1,
     },
     {
       $inc: {
         "guilds.$.score": 1,
-        "guilds.$.all_time_score": 1
-      }
-    }
+        "guilds.$.all_time_score": 1,
+      },
+    },
   );
 }
 
-export async function setSolved(client: IGSBot, userId: string, solved: boolean = false) {
+export async function setSolved(
+  client: IGSBot,
+  userId: string,
+  solved: boolean = false,
+) {
   await client.usersCol.updateOne(
     {
-      "userId": userId,
-      "guilds.active": 1
+      userId: userId,
+      "guilds.active": 1,
     },
     {
       $set: {
-        "guilds.$.solved": solved
-      }
-    }
+        "guilds.$.solved": solved,
+      },
+    },
   );
 }
 
-export async function setUserActiveServer(client: IGSBot, userId: string, activeServerId: string){
+export async function setUserActiveServer(
+  client: IGSBot,
+  userId: string,
+  activeServerId: string,
+) {
   const response = await client.usersCol.updateOne(
     {
-      "userId": userId,
-      "guilds.guildId": activeServerId
+      userId: userId,
+      "guilds.guildId": activeServerId,
     },
     {
       $set: {
         "guilds.$.in_progress": 1,
-        "guilds.$.active": 1
-      }
-    }
+        "guilds.$.active": 1,
+      },
+    },
   );
 
-  if(response.matchedCount === 0){
+  if (response.matchedCount === 0) {
     //Add server to the user
     await client.usersCol.updateOne(
-      { 
-          userId: userId,
+      {
+        userId: userId,
       },
       {
-          $push : {
-              guilds: {
-                  guildId: activeServerId,
-                  score : 0,
-                  active_moves: [],
-                  tries: 0,
-                  active: 0,
-                  in_progress: 1,
-                  solved: false,
-                  all_time_score: 0
-              }
-          }
+        $push: {
+          guilds: {
+            guildId: activeServerId,
+            score: 0,
+            active_moves: [],
+            tries: 0,
+            active: 0,
+            in_progress: 1,
+            solved: false,
+            all_time_score: 0,
+          },
+        },
       },
-      { upsert: true }
+      { upsert: true },
     );
   }
 }
 
-export async function resetUserActiveServers(client: IGSBot, userId: string){
+export async function resetUserActiveServers(client: IGSBot, userId: string) {
   //could get away with update one but lets just be safe
   await client.usersCol.updateMany(
     {
-      "userId": userId,
-      "guilds.active": 1
+      userId: userId,
+      "guilds.active": 1,
     },
     {
       $set: {
-        "guilds.$.active": 0
-      }
-    }
+        "guilds.$.active": 0,
+      },
+    },
   );
 }
 
@@ -279,142 +317,204 @@ export type InProgressPuzzleEntry = UserServerState & {
 };
 
 export async function getScores(client: IGSBot, guildId: string) {
-  const userArray = await client.usersCol.aggregate([
-    // Unwind the guilds array to work with individual guild documents
-    { $unwind: "$guilds" },
+  const userArray = await client.usersCol
+    .aggregate([
+      // Unwind the guilds array to work with individual guild documents
+      { $unwind: "$guilds" },
 
-    // Match only the specific guild we want
-    { $match: { "guilds.guildId": guildId } },
+      // Match only the specific guild we want
+      { $match: { "guilds.guildId": guildId } },
 
-    // Project only the fields we need
-    {
-      $project: {
-        userId: 1,
-        score: "$guilds.score"
-      }
-    }
-  ]).toArray();
+      // Project only the fields we need
+      {
+        $project: {
+          userId: 1,
+          score: "$guilds.score",
+        },
+      },
+    ])
+    .toArray();
 
   return userArray;
 }
 
 export async function resetLeaderboard(client: IGSBot, guildId: string) {
-  await client.usersCol.updateMany({
-    "guilds.guildId": guildId
-  },
-    { $set: { "guilds.$.score": 0 } }
+  await client.usersCol.updateMany(
+    {
+      "guilds.guildId": guildId,
+    },
+    { $set: { "guilds.$.score": 0 } },
   );
 
-  await client.usersCol.updateMany({
-    "guilds": { $elemMatch: { "guildId": guildId, "solved": true } }
-  },
-    { $set: { "guilds.$.score": 1 } }
-  );
-}
-
-export async function setActivePuzzle(client: IGSBot, guildId: string, puzzle: ActivePuzzle) {
-  await client.serverCol.updateOne({
-    "serverId": guildId
-  },
-    { $set: { "active_puzzle": puzzle } }
+  await client.usersCol.updateMany(
+    {
+      guilds: { $elemMatch: { guildId: guildId, solved: true } },
+    },
+    { $set: { "guilds.$.score": 1 } },
   );
 }
 
-export async function addPuzzleToQueue(client: IGSBot, guildId: string, puzzle: PuzzleQueueItem, postion?: number){
-  const results = await client.serverCol.updateOne({
-    "serverId": guildId,
-  },{
-    $push: {
-      puzzle_queue: {
-        $each: [{
-          "source": puzzle.source,
-          "puzzleId": puzzle.puzzleId
-        }],
-        $position: postion ?? undefined
-      }
-    }
-  });
+export async function setActivePuzzle(
+  client: IGSBot,
+  guildId: string,
+  puzzle: ActivePuzzle,
+) {
+  await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    { $set: { active_puzzle: puzzle } },
+  );
+}
+
+export async function addPuzzleToQueue(
+  client: IGSBot,
+  guildId: string,
+  puzzle: PuzzleQueueItem,
+  postion?: number,
+) {
+  const results = await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    {
+      $push: {
+        puzzle_queue: {
+          $each: [
+            {
+              source: puzzle.source,
+              puzzleId: puzzle.puzzleId,
+            },
+          ],
+          $position: postion ?? undefined,
+        },
+      },
+    },
+  );
   return results.modifiedCount > 0;
 }
 
-export async function removePuzzleFromQueue(client: IGSBot, guildId: string, puzzle: PuzzleQueueItem): Promise<boolean>{
-  const results = await client.serverCol.updateOne({
-    "serverId": guildId,
-  },{
-    $pull : {
-      puzzle_queue: {
-        "source": puzzle.source,
-        "puzzleId": puzzle.puzzleId
-      }
-    }
-  });
+export async function removePuzzleFromQueue(
+  client: IGSBot,
+  guildId: string,
+  puzzle: PuzzleQueueItem,
+): Promise<boolean> {
+  const results = await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    {
+      $pull: {
+        puzzle_queue: {
+          source: puzzle.source,
+          puzzleId: puzzle.puzzleId,
+        },
+      },
+    },
+  );
   return results.modifiedCount > 0;
 }
 
-export async function addCollection(client: IGSBot, guildId: string, collection: CollectionSource) {
-  const results = await client.serverCol.updateOne({
-    "serverId": guildId,
-  },{
-    $push: {
-      collection_sources: {
-        "name": collection.name,
-        "payload": collection.payload,
-        "source": collection.source,
-        "type": collection.type
-      }
-    }
-  });
+export async function addCollection(
+  client: IGSBot,
+  guildId: string,
+  collection: CollectionSource,
+) {
+  const results = await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    {
+      $push: {
+        collection_sources: {
+          name: collection.name,
+          payload: collection.payload,
+          source: collection.source,
+          type: collection.type,
+        },
+      },
+    },
+  );
   return results.modifiedCount > 0;
 }
 
-export async function removeCollection(client: IGSBot, guildId: string, provider: Providers, name: string){
-  const results = await client.serverCol.updateOne({
-    "serverId": guildId,
-  },{
-    $pull : {
-      collection_sources: {
-        "source": provider,
-        "name": name
-      }
-    }
-  });
+export async function removeCollection(
+  client: IGSBot,
+  guildId: string,
+  provider: Providers,
+  name: string,
+) {
+  const results = await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    {
+      $pull: {
+        collection_sources: {
+          source: provider,
+          name: name,
+        },
+      },
+    },
+  );
   return results.modifiedCount > 0;
 }
 
-export async function setSchedule(client: IGSBot, guildId: string, scheduleExpression: string, channelId: string, role?: string) {
-  await client.serverCol.updateOne({
-    "serverId": guildId
-  },
-  { $set: { 
-    "announcementChannel": channelId,
-    "announcementRole": role, 
-    "scheduleExpression": scheduleExpression }} 
+export async function setSchedule(
+  client: IGSBot,
+  guildId: string,
+  scheduleExpression: string,
+  channelId: string,
+  role?: string,
+) {
+  await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    {
+      $set: {
+        announcementChannel: channelId,
+        announcementRole: role,
+        scheduleExpression: scheduleExpression,
+      },
+    },
   );
 }
 
 export async function clearSchedule(client: IGSBot, guildId: string) {
-  await client.serverCol.updateOne({
-    "serverId": guildId
-  },
-  { $unset: { 
-    "announcementChannel": 1,
-    "announcementRole": 1,
-    "scheduleExpression": 1 }} 
+  await client.serverCol.updateOne(
+    {
+      serverId: guildId,
+    },
+    {
+      $unset: {
+        announcementChannel: 1,
+        announcementRole: 1,
+        scheduleExpression: 1,
+      },
+    },
   );
 }
-  
-export async function createDBUser(client: IGSBot, userId: string): Promise<InsertOneResult<UserDocument>>{
+
+export async function createDBUser(
+  client: IGSBot,
+  userId: string,
+): Promise<InsertOneResult<UserDocument>> {
   return await client.usersCol.insertOne({
-    "userId": userId,
-    "guilds": [],
+    userId: userId,
+    guilds: [],
   });
 }
 
-export async function createDBServer(client: IGSBot, guildId: string, guildName: string){
+export async function createDBServer(
+  client: IGSBot,
+  guildId: string,
+  guildName: string,
+) {
   await client.serverCol.insertOne({
-    'serverId' : guildId,
-    'name' : guildName,  
-    'puzzle_queue' : [],
-    'collection_sources': [],
+    serverId: guildId,
+    name: guildName,
+    puzzle_queue: [],
+    collection_sources: [],
   });
 }

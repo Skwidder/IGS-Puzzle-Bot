@@ -2,36 +2,50 @@ import type { AutocompleteFocusedOption } from "discord.js";
 import type { ActivePuzzle, CollectionSource } from "../databaseManager";
 import type { Providers } from "./ProviderRegistry";
 
-export interface MoveResponse{
-    isSequanceEnd: boolean
-    isCorrect: boolean
-    responseMove?: string //SGF format eg W[ac]
-    marks?: string[] //SGF format 
-    comments?: string
+export interface MoveResponse {
+  isSequanceEnd: boolean;
+  isCorrect: boolean;
+  responseMove?: string; //SGF format eg W[ac]
+  marks?: string[]; //SGF format
+  comments?: string;
 }
 
-
 export abstract class PuzzleProvider {
-    abstract readonly name: string;
-    abstract readonly slug: Providers;
-    abstract readonly apiBaseURL: string;
-    abstract readonly playBaseURL: string;
+  abstract readonly name: string;
+  abstract readonly slug: Providers;
+  abstract readonly apiBaseURL: string;
+  abstract readonly playBaseURL: string;
 
-    abstract fetchPuzzle(puzzleId: string | number): Promise<ActivePuzzle | null>;
+  abstract fetchPuzzle(puzzleId: string | number): Promise<ActivePuzzle | null>;
 
-    abstract discoverPuzzles(collectionSource: CollectionSource): Promise<number[] | string[] | null>;
-    
-    abstract getMoveResponse(puzzle: ActivePuzzle, pastMoves: string[], newMove: string): Promise<MoveResponse>;
+  abstract discoverPuzzles(
+    collectionSource: CollectionSource,
+  ): Promise<number[] | string[] | null>;
 
-    abstract getMarks(puzzle: ActivePuzzle, moves: string[]): Promise<string[] | undefined>;
+  abstract getMoveResponse(
+    puzzle: ActivePuzzle,
+    pastMoves: string[],
+    newMove: string,
+  ): Promise<MoveResponse>;
 
-    abstract searchCollection(searchString: string): Promise<CollectionSource | "NO_COLLECTION_FOUND" | 
-     "COLLECTION_PRIVATE" |
-     "TOO_MANY_COLLECTIONS" |
-     "ERROR">;
+  abstract getMarks(
+    puzzle: ActivePuzzle,
+    moves: string[],
+  ): Promise<string[] | undefined>;
 
-    abstract collectionAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{name: string, value: string}[] | null>;
-    
-    // abstract puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{name: string, value: string}[] | null>;
+  abstract searchCollection(
+    searchString: string,
+  ): Promise<
+    | CollectionSource
+    | "NO_COLLECTION_FOUND"
+    | "COLLECTION_PRIVATE"
+    | "TOO_MANY_COLLECTIONS"
+    | "ERROR"
+  >;
 
+  abstract collectionAutocomplete(
+    focusedOption: AutocompleteFocusedOption,
+  ): Promise<{ name: string; value: string }[] | null>;
+
+  // abstract puzzleAutocomplete(focusedOption: AutocompleteFocusedOption): Promise<{name: string, value: string}[] | null>;
 }
