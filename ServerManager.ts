@@ -78,7 +78,7 @@ export async function advanceToNextPuzzle(
 
     if (!puzzle) return { success: false, errorType: "PUZZLE_NOT_FOUND" };
 
-    setActivePuzzle(client, guildId, puzzle);
+    await setActivePuzzle(client, guildId, puzzle);
     resetPuzzle(client, guildId);
 
     return {
@@ -102,7 +102,7 @@ export async function advanceToNextPuzzle(
 
   if (!puzzle) return { success: false, errorType: "PUZZLE_NOT_FOUND" };
 
-  setActivePuzzle(client, guildId, puzzle);
+  await setActivePuzzle(client, guildId, puzzle);
   resetPuzzle(client, guildId);
 
   return { success: true, message: "Server moved to next puzzle!" };
@@ -198,7 +198,6 @@ export async function newSchedule(
   client.scheduledJobs?.[serverId]?.cancel();
   delete client.scheduledJobs[serverId];
 
-  console.log(client.scheduledJobs);
   await clearSchedule(client, serverId);
 
   const results = await scheduleAnnoucmnet(
