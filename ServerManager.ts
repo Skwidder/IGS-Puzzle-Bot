@@ -219,7 +219,8 @@ export async function turnOffSchedule(interaction: RepliableInteraction) {
   if (!serverId)
     throw Error("[New Schedule]: ServerId Not found from Interaction");
 
-  client.scheduledJobs?.serverId?.cancel();
+  client.scheduledJobs?.[serverId]?.cancel();
+  delete client.scheduledJobs[serverId];
   await clearSchedule(client, serverId);
 
   interactionReply(

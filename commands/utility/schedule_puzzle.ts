@@ -92,7 +92,6 @@ async function execute(interaction: ChatInputCommandInteraction) {
   const channel = interaction.options.getChannel("channel");
   let role = interaction.options.getRole("role");
 
-  if (!channel) interactionReply(interaction, "Must specify a channel");
 
   let cronExpression = "";
 
@@ -100,13 +99,16 @@ async function execute(interaction: ChatInputCommandInteraction) {
 
   switch (subcommand) {
     case "daily":
+      if (!channel) interactionReply(interaction, "Must specify a channel");
       cronExpression = "0 0 * * *"; // Every day at midnight
 
       break;
     case "weekly":
+      if (!channel) interactionReply(interaction, "Must specify a channel");
       cronExpression = "0 0 * * 0"; // Every Sunday at midnight
       break;
     case "custom":
+      if (!channel) interactionReply(interaction, "Must specify a channel");
       const customCron = interaction.options.getString("cron");
       if (!customCron) {
         interactionReply(interaction, "Invalid Input");
