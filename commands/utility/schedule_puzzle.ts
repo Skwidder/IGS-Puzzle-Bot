@@ -94,7 +94,7 @@ async function execute(interaction: ChatInputCommandInteraction) {
             return;
     }
 
-    const results = newSchedule(interaction,cronExpression,channel?.id ?? "", role?.id ?? "");
+    const results = await newSchedule(interaction,cronExpression,channel?.id ?? "", role?.id ?? "");
     switch (results){
         case "CRON_INVALID":
             interactionReply(interaction, "Cron Invalid");

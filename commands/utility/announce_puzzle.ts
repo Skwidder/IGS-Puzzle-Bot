@@ -28,6 +28,22 @@ async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     if(!interaction.guildId) throw Error("/announce_puzzle not on a server");
-    annoucePuzzle(client,interaction.guildId,channelId,roleId);
-    interactionReply(interaction, "Announcement made");
+    const response = await annoucePuzzle(client,interaction.guildId,channelId,roleId);
+    
+    switch(response) {
+        case "NO_PERMISSIONS":
+            interactionReply(interaction, "Bot does not have permissions in that channel");
+            break;
+        case "NO_PUZZLE":
+            interactionReply(interaction, "No active puzzles, please use /next_puzzle to set an active puzzle");
+            break;
+        case null:
+            interactionReply(interaction, "Error, report on github");
+            break;
+        default:
+            interactionReply(interaction, "Announcement made");
+            break;
+    }
 }
+
+export default { data, execute};

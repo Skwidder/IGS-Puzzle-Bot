@@ -1,4 +1,4 @@
-import { EmbedBuilder, type Channel, type ChatInputCommandInteraction, type GuildBasedChannel, type GuildChannelResolvable, type Interaction, type RepliableInteraction, type Role, type StageInstance } from "discord.js";
+import { EmbedBuilder, Message, type Channel, type ChatInputCommandInteraction, type GuildBasedChannel, type GuildChannelResolvable, type Interaction, type RepliableInteraction, type Role, type StageInstance } from "discord.js";
 import { addPuzzleToQueue, clearSchedule, getScores, getServer, movePuzzleQueue, resetPuzzle, setActivePuzzle, setSchedule, type ActivePuzzle, type CollectionSource, type PuzzleQueueItem } from "./databaseManager";
 import { type ServerConfig, type UserDocument } from "./databaseManager";
 import type { IGSBot } from "./IGSBot";
@@ -85,24 +85,27 @@ export async function scheduleAnnoucmnet(
 
   const botPermissions = channel?.permissionsFor(me);
 
-  if (!botPermissions?.has("SendMessages")) return "NO_PERMISSIONS";
-
+  if (!botPermissions?.has(["SendMessages","ViewChannel"])) return "NO_PERMISSIONS";
   client.scheduledJobs[serverId] = await schedule.scheduleJob(scheduleExpression, async () => {
       let response = {}
       try{
-          //TODO: Grab result from this function and give user feedback
           response = await advanceToNextPuzzle(client,serverId);
       }catch(error){
+          sendAnnounceChannelMessage(client, guild.id, "No Approved collections or puzzles at announcement time");
           console.error(`Server: ${guild.name} has no queue or approved collections at scheduled time: ${error}`);
           return;
       }
 
-      annoucePuzzle(client,serverId);
+      const result = await annoucePuzzle(client,serverId);
+      if(result == "NO_PERMISSIONS"){
+        console.log(`Guild: ${guild.id} used to have channel access but no more`);
+      }
   });
 
   console.log(`Creating Schedule for ${guild.name} to Run at: ${scheduleExpression}`);
   return client.scheduledJobs[serverId];
 }
+
 
 export async function newSchedule(interaction: RepliableInteraction, scheduleExpression: string, channelId: string, role?: string):
   Promise<schedule.Job | "CRON_INVALID" | "NO_PERMISSIONS" | "INVALID_CHANNEL" | "INVALID_SERVER">{
@@ -136,20 +139,20 @@ export async function turnOffSchedule(interaction: RepliableInteraction){
 }
 
 
-export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?: string, roleId?: string) {
+export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?: string, roleId?: string):
+  Promise<Message | null | "NO_PERMISSIONS" | "NO_PUZZLE"> {
   const server: ServerConfig | null = await getServer(client, guildId);
   if(!server){
     console.log(`[Announce Puzzle] Server: ${guildId} apprears to be missing`);
-    return;
+    return null;
   }
   
   if(!server.active_puzzle){
-    sendAnnounceChannelMessage(client, guildId, "No active puzzles, please use /next_puzzle to set an active puzzle");
-    return;
+    return "NO_PUZZLE";
   }
 
   const board: Position | false = await getSimulatedBoard(server.active_puzzle, []);
-  if(!board) return; //how has this happend
+  if(!board) return null; //how has this happend
 
   const builder = new GoBoardImageBuilder(board.size);
   builder.addWgoGridStones(board.grid);
@@ -165,9 +168,11 @@ export async function annoucePuzzle(client: IGSBot, guildId: string, channelId?:
   const fields = infoToEmbedFields(client, server.active_puzzle, undefined, true);
   const embed = embedMaker(fields);
   const messagePackage = embedPackager(embed, `${guildId}.png`);
-  await sendAnnounceChannelMessage(client, guildId, `<@&${roleId ?? server?.announcementRole}>` || undefined, messagePackage, channelId);
+  const response = await sendAnnounceChannelMessage(client, guildId, `<@&${roleId ?? server?.announcementRole}>` || undefined, messagePackage, channelId);
 
   builder.deletePNG();
+  if(!response) return "NO_PERMISSIONS";
+  return response;
 }
 
 

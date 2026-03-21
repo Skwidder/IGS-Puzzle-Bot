@@ -44,6 +44,7 @@ export class IGSBot extends Client {
     }
 
     async scheduleJobs() {
+        //TODO: Fix
         const servers = await this.serverCol.find({}).toArray()
 
         for (const server of servers){
@@ -57,9 +58,6 @@ export class IGSBot extends Client {
 
             // Create the scheduled job
             this.scheduledJobs = this.scheduledJobs || {};
-            
-
-            
         }
     }
 }
