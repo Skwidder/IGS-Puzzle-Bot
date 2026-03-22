@@ -57,7 +57,7 @@ export async function advanceToNextPuzzle(
   if (!server) return { success: false, errorType: "SERVER_NOT_FOUND" };
 
   if (server.puzzle_queue.length < 1) {
-    if (!server.collection_sources) {
+    if (!server.collection_sources || server.collection_sources.length < 1) {
       return { success: false, errorType: "NO_COLLECTIONS" };
     }
 
@@ -66,6 +66,7 @@ export async function advanceToNextPuzzle(
         Math.floor(Math.random() * server.collection_sources.length)
       ];
 
+      
     const provider: PuzzleProvider = await client.providerRegistry.get(
       collectionSource.source,
     );
