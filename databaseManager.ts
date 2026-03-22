@@ -236,6 +236,22 @@ export async function incrementScore(client: IGSBot, userId: string) {
   );
 }
 
+export async function getSolved(client: IGSBot, userId: string) {
+  const user = await client.usersCol.findOne(
+    {
+      userId: userId,
+      "guilds.active": 1,
+    },
+    {
+      projection: {
+        "guilds.$": 1,
+      },
+    },
+  );
+  console.log(user);
+  return user?.guilds?.[0]?.solved ?? false;
+}
+
 export async function setSolved(
   client: IGSBot,
   userId: string,

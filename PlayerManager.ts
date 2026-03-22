@@ -12,12 +12,16 @@ import {
   addUserMove,
   createDBUser,
   getServer,
+  getSolved,
   getUser,
   getUserActiveServerState,
+  incrementScore,
+  incrementTries,
   removeLastMove,
   resetUserActiveServers,
   resetUserMoves,
   setActivePuzzle,
+  setSolved,
   setUserActiveServer,
   type ActivePuzzle,
   type ServerConfig,
@@ -147,6 +151,19 @@ export async function userMessageHandle(message: Message) {
     }
 
     if (!activeServer) throw Error("Active server should be set by now");
+
+    // console.log(`solved?: ${getSo}`)
+    if (
+      !(await getSolved(client, message.author.id)) &&
+      response?.isCorrect === true
+    ) {
+      incrementScore(client, message.author.id);
+      setSolved(client, message.author.id, true);
+    }
+
+    if (response?.isSequanceEnd === true && response?.isCorrect === false) {
+      incrementTries(client, message.author.id);
+    }
 
     const renderOptions: RenderBoardOptions = {
       newMoveSGF: newMoveSGF,
