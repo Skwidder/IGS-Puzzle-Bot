@@ -1,10 +1,13 @@
 {
   "name": "igs-puzzle-bot",
-  "version": "1.0.0",
+  "type": "module",
+  "version": "2.0.0",
   "description": "A Puzzle bot For the Iowa Go Discord Server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "bun index.ts",
+    "dev": "bun --hot index.ts"
   },
   "repository": {
     "type": "git",
@@ -25,5 +28,14 @@
     "node-schedule": "^2.1.1",
     "sharp": "^0.33.5",
     "wgo": "^3.0.0-alpha.10"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "^1.3.6",
+    "@types/node": "^25.0.10",
+    "@types/node-schedule": "^2.1.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }
