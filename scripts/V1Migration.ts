@@ -3,7 +3,7 @@ import { OGSProvider } from "../providers/OGSProvider";
 import axios from "axios";
 
 // Constants for your migration
-const DRY_RUN = false;
+const DRY_RUN = true;
 
 async function migrateServer() {
   const client = new MongoClient(Bun.env.DBCONNSTRING || "");
