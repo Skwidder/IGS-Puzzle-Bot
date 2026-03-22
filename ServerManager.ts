@@ -152,7 +152,8 @@ export async function scheduleAnnoucmnet(
         sendAnnounceChannelMessage(
           client,
           guild.id,
-          "No Approved collections or puzzles at announcement time",
+          "No Approved collections or puzzles at announcement time. Please use /collection add or /puzzle add to add them, Or turn off" +
+            "puzzle annoucnments with /schedule_puzzle off",
         );
         console.error(
           `Server: ${guild.name} has no queue or approved collections at scheduled time: ${error}`,
