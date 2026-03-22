@@ -133,7 +133,7 @@ export async function removeLastMove(
   client: IGSBot,
   userId: string,
 ): Promise<UserServerState | null> {
-  client.usersCol.updateOne(
+  await client.usersCol.updateOne(
     {
       userId: userId,
       "guilds.active": 1,
@@ -248,7 +248,6 @@ export async function getSolved(client: IGSBot, userId: string) {
       },
     },
   );
-  console.log(user);
   return user?.guilds?.[0]?.solved ?? false;
 }
 
