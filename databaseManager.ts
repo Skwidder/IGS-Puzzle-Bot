@@ -202,7 +202,7 @@ export async function movePuzzleQueue(
     { $pop: { puzzle_queue: -1 } },
   ); // -1 removes first element
 
-  if ((response.modifiedCount === 0)) return null;
+  if (response.modifiedCount === 0) return null;
 
   return server.puzzle_queue[0]; //return old first item
 }

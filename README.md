@@ -65,11 +65,11 @@ Make sure these are enabled in your application's Discord Developer Portal.
 
 Once a puzzle is active, members interact with it **via DM**:
 
-| Command | Description |
-|---------|-------------|
-| `!<location>` | Play a move (e.g. `!B17`, `!Q3`) |
-| `!reset` | Reset the puzzle back to its starting position |
-| `!undo` | Undo your last move |
+| Command       | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `!<location>` | Play a move (e.g. `!B17`, `!Q3`)               |
+| `!reset`      | Reset the puzzle back to its starting position |
+| `!undo`       | Undo your last move                            |
 
 The bot responds with a rendered board image showing the current position, move result, and source info.
 
@@ -80,42 +80,48 @@ If you have puzzles in progress on multiple servers, the bot will send a selecti
 ## Commands
 
 ### 🎯 `/play`
+
 Sends the current active puzzle to you via DM. Creates your user account automatically if this is your first time. Guild only.
 
 ---
 
 ### 📢 `/announce_puzzle`
+
 Posts the current active puzzle in a channel, with an optional role ping. Generates a board image with starting marks.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `channel` | Channel | ✅ | Channel to post the announcement to |
-| `role` | Role | ❌ | Role to ping in the announcement |
+| Option    | Type    | Required | Description                         |
+| --------- | ------- | -------- | ----------------------------------- |
+| `channel` | Channel | ✅       | Channel to post the announcement to |
+| `role`    | Role    | ❌       | Role to ping in the announcement    |
 
 > Requires **Administrator** or **Moderate Members** permission.
 
 ---
 
 ### 🧩 `/puzzle`
+
 Full control over the puzzle queue.
 
 #### `/puzzle add`
+
 Validates and adds a specific puzzle to the queue by ID.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `website` | String | ✅ | Provider to pull from (autocomplete) |
-| `id` | String | ✅ | Puzzle ID on that website |
-| `position` | Choice | ❌ | `Next` (front of queue) or `Last` (default) |
+| Option     | Type   | Required | Description                                 |
+| ---------- | ------ | -------- | ------------------------------------------- |
+| `website`  | String | ✅       | Provider to pull from (autocomplete)        |
+| `id`       | String | ✅       | Puzzle ID on that website                   |
+| `position` | Choice | ❌       | `Next` (front of queue) or `Last` (default) |
 
 #### `/puzzle remove`
+
 Remove a puzzle from the queue.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `remove` | String | ✅ | Puzzle to remove (autocomplete) |
+| Option   | Type   | Required | Description                     |
+| -------- | ------ | -------- | ------------------------------- |
+| `remove` | String | ✅       | Puzzle to remove (autocomplete) |
 
 #### `/puzzle next`
+
 Advance to the next puzzle in the queue, removing the current one. If the queue is empty, a puzzle is drawn randomly from an approved collection. Follow up with `/announce_puzzle` to post it.
 
 > Requires **Administrator** or **Moderate Members** permission.
@@ -123,65 +129,74 @@ Advance to the next puzzle in the queue, removing the current one. If the queue 
 ---
 
 ### 📚 `/collection`
+
 Manage approved puzzle collections. When the puzzle queue runs dry, the bot automatically picks a random puzzle from one of these.
 
 #### `/collection add`
+
 Add a collection from a supported provider. Uses autocomplete to search and validate the collection before adding it.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `website` | String | ✅ | Provider (autocomplete) |
-| `search` | String | ✅ | Collection name, ID, or search string (autocomplete) |
+| Option    | Type   | Required | Description                                          |
+| --------- | ------ | -------- | ---------------------------------------------------- |
+| `website` | String | ✅       | Provider (autocomplete)                              |
+| `search`  | String | ✅       | Collection name, ID, or search string (autocomplete) |
 
 #### `/collection remove`
+
 Remove a collection from the approved list.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `remove` | String | ✅ | Collection to remove (autocomplete) |
+| Option   | Type   | Required | Description                         |
+| -------- | ------ | -------- | ----------------------------------- |
+| `remove` | String | ✅       | Collection to remove (autocomplete) |
 
 > Requires **Administrator** permission.
 
 ---
 
 ### 🏆 `/leaderboard`
+
 Displays the server's puzzle leaderboard. Scores are based on puzzles solved correctly.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `numresults` | Integer | ❌ | Number of players to show (default: 10) |
+| Option       | Type    | Required | Description                             |
+| ------------ | ------- | -------- | --------------------------------------- |
+| `numresults` | Integer | ❌       | Number of players to show (default: 10) |
 
 ---
 
 ### 🗓️ `/schedule_puzzle`
+
 Configure automatic puzzle advancement on a recurring schedule. On each trigger, the bot advances to the next puzzle and posts an announcement.
 
 #### `/schedule_puzzle daily`
+
 Advances every day at midnight (`0 0 * * *`).
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `channel` | Channel | ✅ | Channel for the announcement |
-| `role` | Role | ❌ | Role to ping |
+| Option    | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| `channel` | Channel | ✅       | Channel for the announcement |
+| `role`    | Role    | ❌       | Role to ping                 |
 
 #### `/schedule_puzzle weekly`
+
 Advances every Sunday at midnight (`0 0 * * 0`).
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `channel` | Channel | ✅ | Channel for the announcement |
-| `role` | Role | ❌ | Role to ping |
+| Option    | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| `channel` | Channel | ✅       | Channel for the announcement |
+| `role`    | Role    | ❌       | Role to ping                 |
 
 #### `/schedule_puzzle custom`
+
 Set any schedule using a cron expression.
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `cron` | String | ✅ | Valid cron expression (e.g. `0 9 * * 1` for Monday 9am) |
-| `channel` | Channel | ✅ | Channel for the announcement |
-| `role` | Role | ❌ | Role to ping |
+| Option    | Type    | Required | Description                                             |
+| --------- | ------- | -------- | ------------------------------------------------------- |
+| `cron`    | String  | ✅       | Valid cron expression (e.g. `0 9 * * 1` for Monday 9am) |
+| `channel` | Channel | ✅       | Channel for the announcement                            |
+| `role`    | Role    | ❌       | Role to ping                                            |
 
 #### `/schedule_puzzle off`
+
 Cancels the active schedule.
 
 > Requires **Administrator** permission. Schedules survive bot restarts — they are persisted to MongoDB and restored on startup.
@@ -189,6 +204,7 @@ Cancels the active schedule.
 ---
 
 ### 🔁 `/reset_leaderboard`
+
 Resets all current scores to zero. Players who have already solved the active puzzle retain 1 point. All-time scores are never affected.
 
 > Requires **Administrator** permission.
@@ -197,15 +213,15 @@ Resets all current scores to zero. Players who have already solved the active pu
 
 ## Permissions Summary
 
-| Command | Required Permission |
-|---------|-------------------|
-| `/play` | Everyone |
-| `/leaderboard` | Everyone |
-| `/announce_puzzle` | Administrator or Moderate Members |
-| `/puzzle` | Administrator or Moderate Members |
-| `/collection` | Administrator |
-| `/schedule_puzzle` | Administrator |
-| `/reset_leaderboard` | Administrator |
+| Command              | Required Permission               |
+| -------------------- | --------------------------------- |
+| `/play`              | Everyone                          |
+| `/leaderboard`       | Everyone                          |
+| `/announce_puzzle`   | Administrator or Moderate Members |
+| `/puzzle`            | Administrator or Moderate Members |
+| `/collection`        | Administrator                     |
+| `/schedule_puzzle`   | Administrator                     |
+| `/reset_leaderboard` | Administrator                     |
 
 ---
 
@@ -216,7 +232,6 @@ Resets all current scores to zero. Players who have already solved the active pu
 3. **Announce** — use `/announce_puzzle` to post it to a channel, or let `/schedule_puzzle` handle steps 2 and 3 automatically on a recurring schedule
 4. **Play** — members use `/play` to receive the board in their DMs, then respond with moves like `!B17`
 5. **Track progress** — check standings at any time with `/leaderboard`
-
 
 ## Issues & Contributing
 

@@ -92,7 +92,6 @@ async function execute(interaction: ChatInputCommandInteraction) {
   const channel = interaction.options.getChannel("channel");
   let role = interaction.options.getRole("role");
 
-
   let cronExpression = "";
 
   if (!interaction.guildId) throw Error("/schedule_puzzle not on a server");
