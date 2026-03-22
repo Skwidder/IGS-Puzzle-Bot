@@ -221,3 +221,7 @@ Resets all current scores to zero. Players who have already solved the active pu
 ## Issues & Contributing
 
 Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/Skwidder/IGS-Puzzle-Bot/issues).
+
+## Support Me
+
+Support this project and others like it on Ko-Fi: https://ko-fi.com/skwidder
