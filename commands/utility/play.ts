@@ -13,7 +13,17 @@ const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild);
 
 async function execute(interaction: ChatInputCommandInteraction) {
-  playerPlay(interaction);
+  try {
+    await playerPlay(interaction);
+  } catch (error) {
+    if(error.message === "Server has not active puzzle!") {
+      interactionReply(interaction, "Server has no active puzzle ask admin to add one");
+      return;
+    } else {
+      throw error;
+    }
+  }
+  
   interactionReply(interaction, "Check DM for puzzle!");
 }
 

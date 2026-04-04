@@ -272,7 +272,7 @@ export async function playerPlay(interaction: ChatInputCommandInteraction) {
   );
 
   if (!puzzle)
-    throw Error("How do we have an active server but no active puzzle?");
+    throw Error("Server has not active puzzle!");
 
   const puzzleProvider: PuzzleProvider = client.providerRegistry.get(
     puzzle.source,
