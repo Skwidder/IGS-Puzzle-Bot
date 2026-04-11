@@ -291,7 +291,7 @@ export async function annoucePuzzle(
 
 export async function showLeaderBoard(
   interaction: ChatInputCommandInteraction,
-  numOfUsersToShow: number = 10,
+  numOfUsersToShow: number = 10, fromReset: boolean = false,
 ) {
   await interaction.deferReply();
 
@@ -338,6 +338,9 @@ export async function showLeaderBoard(
         .join("\n"),
     );
 
+  if(fromReset){
+    interaction.editReply({ embeds: [embed], content: "Leaderboard reset!" });
+  }
   interaction.editReply({ embeds: [embed] });
 }
 
