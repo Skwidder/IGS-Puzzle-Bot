@@ -1,7 +1,12 @@
-import { Client } from "discord.js";
+import { Client, Guild } from "discord.js";
 import { IGSBot } from "./IGSBot";
 import { Providers } from "./providers/ProviderRegistry";
 import type { InsertOneResult } from "mongodb";
+import { showLeaderBoard } from "./ServerManager";
+import {
+  type ChatInputCommandInteraction,
+} from "discord.js";
+import { interactionReply } from "./discordManager";
 
 export interface UserServerState {
   guildId: string;
@@ -353,20 +358,32 @@ export async function getScores(client: IGSBot, guildId: string) {
   return userArray;
 }
 
-export async function resetLeaderboard(client: IGSBot, guildId: string) {
+export async function resetLeaderboard(interaction: ChatInputCommandInteraction,
+  numOfUsersToShow: number = 10,) {
+
+  let client = interaction.client as IGSBot;
   await client.usersCol.updateMany(
     {
-      "guilds.guildId": guildId,
+      guilds: { $elemMatch: { guildId: interaction.guildId, solved: true } },
+    },
+    { $inc: {"guilds.$.score":-1}  },
+  );
+
+  await showLeaderBoard(interaction, numOfUsersToShow, true);
+
+  await client.usersCol.updateMany(
+    {
+      "guilds.guildId": interaction.guildId,
     },
     { $set: { "guilds.$.score": 0 } },
   );
 
   await client.usersCol.updateMany(
     {
-      guilds: { $elemMatch: { guildId: guildId, solved: true } },
+      guilds: { $elemMatch: { guildId: interaction.guildId, solved: true } },
     },
     { $set: { "guilds.$.score": 1 } },
-  );
+  );  
 }
 
 export async function setActivePuzzle(
