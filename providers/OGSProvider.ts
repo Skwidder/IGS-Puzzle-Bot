@@ -160,35 +160,36 @@ export class OGSProvider extends PuzzleProvider {
     responseMove?: string,
   ): MoveResponse | null {
     const marks: string[] = this.convertMarks(moveTree.marks);
-
-    if (!moveTree.branches || moveTree.branches.length == 0) {
-      if (moveTree.correct_answer) {
-        if (moveTree.correct_answer == true) {
-          return {
-            isSequanceEnd: true,
-            isCorrect: true,
-            comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, "") ?? "",
-            responseMove: responseMove,
-            marks: marks,
-          };
-        } else {
-          //false
-          return {
-            isSequanceEnd: true,
-            isCorrect: false,
-            comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, "") ?? "",
-            responseMove: responseMove,
-            marks: marks,
-          };
-        }
-      } else {
+    
+    
+    if (moveTree.correct_answer) {
+      if (moveTree.correct_answer == true) {
         return {
           isSequanceEnd: true,
-          isCorrect: false,
-          comments: ":interrobang:Response not mapped",
+          isCorrect: true,
+          comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, "") ?? "",
           responseMove: responseMove,
           marks: marks,
         };
+      } else {
+        //false
+        return {
+          isSequanceEnd: true,
+          isCorrect: false,
+          comments: moveTree.text?.replace(/<(?!br\s*\/?)[^>]+>/g, "") ?? "",
+          responseMove: responseMove,
+          marks: marks,
+        };
+      }
+    }
+
+    if (!moveTree.branches || moveTree.branches.length == 0) {
+      return {
+        isSequanceEnd: true,
+        isCorrect: false,
+        comments: ":interrobang:Response not mapped",
+        responseMove: responseMove,
+        marks: marks,
       }
     }
     return null;
